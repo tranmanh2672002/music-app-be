@@ -1,0 +1,36 @@
+variables:
+  IMAGE_NAME: ttlab-gitman-backend
+  CONTAINER_NAME: ttlab-gitman-backend
+  EXPOSE_PORT: 3090:3090
+  IMAGE_TAG: 1.0.0
+
+stages:
+  - test
+  - build
+
+test_lint:
+  tags:
+    - gitman-backend
+  image: node:16-alpine3.16
+  stage: test
+  script:
+    - yarn install
+    - yarn lint
+  only:
+    - develop
+
+build_image:
+  tags:
+    - gitman-backend
+  stage: build
+  image: alpine
+  before_script:
+    - docker stop $(docker ps -aq --filter="name=$CONTAINER_NAME") || true
+    - docker rm $(docker ps -aq --filter="name=$CONTAINER_NAME") || true
+  script:
+    - git pull origin develop --allow-unrelated-histories
+    - cp /home/ubuntu/ttlab/git-management-center/ttlab-git-management-backend/.env ./.env
+    - docker build --no-cache -t $IMAGE_NAME:$IMAGE_TAG .
+    - docker run -d --env-file ./.env -p $EXPOSE_PORT --name $CONTAINER_NAME $IMAGE_NAME:$IMAGE_TAG
+  only:
+    - develop

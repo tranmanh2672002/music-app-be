@@ -1,0 +1,7 @@
+{
+    "error": {
+        "userNotFound": "User does not exist",
+        "userAlreadyExist": "User existed",
+        "userDeleteMySelf": "User does not delete myself"
+    }
+}
