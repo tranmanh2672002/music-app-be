@@ -10,7 +10,6 @@ import { Model } from 'mongoose';
 import { createWinstonLogger } from 'src/common/services/winston.service';
 import { MODULE_NAME } from '../auth.constant';
 import { ICreateUserTokenBody } from '../auth.interface';
-
 @Injectable()
 export class AuthMongoService {
     constructor(

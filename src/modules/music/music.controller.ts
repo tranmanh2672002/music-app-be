@@ -1,21 +1,15 @@
-import { JoiValidationPipe } from 'src/common/pipe/joi.validation.pipe';
-import { HttpStatus } from './../../common/constants';
 import {
-    Body,
     Controller,
     Get,
     InternalServerErrorException,
-    Post,
     Param,
-    Delete,
-    Patch,
     Query,
-    UseGuards,
-    Req,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { I18nService } from 'nestjs-i18n';
 import { ErrorResponse, SuccessResponse } from 'src/common/helpers/response';
+import { JoiValidationPipe } from 'src/common/pipe/joi.validation.pipe';
+import { HttpStatus } from './../../common/constants';
 import { IMusicSearchQuery } from './music.interface';
 import { musicSearchSchema } from './music.validator';
 import { MusicService } from './services/music.youtube.service';

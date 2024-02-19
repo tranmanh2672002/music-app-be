@@ -1,7 +1,7 @@
 import ConfigKey from '@/common/config/config-key';
 import { DateFormat, HttpStatus } from '@/common/constants';
 import { AuthenticationGuard } from '@/common/guards/authentication.guard';
-import { extractToken } from '@/common/helpers/commonFunctions';
+import { extractToken, hashPassword } from '@/common/helpers/commonFunctions';
 import { TrimBodyPipe } from '@/common/pipe/trim.body.pipe';
 import {
     Body,
@@ -13,6 +13,7 @@ import {
     Query,
     Req,
     UseGuards,
+    Res,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
@@ -23,7 +24,11 @@ import { JoiValidationPipe } from 'src/common/pipe/joi.validation.pipe';
 import { UserMongoService } from '../user/services/user.mongo.service';
 import { userAttributes } from '../user/user.constant';
 import { UserTokenType } from './auth.constant';
-import { ILoginBody, IUpdateUserProfileBody } from './auth.interface';
+import {
+    ILoginBody,
+    IRegisterBody,
+    IUpdateUserProfileBody,
+} from './auth.interface';
 import {
     getGoogleLoginUrlQuerySchema,
     loginBodySchema,
@@ -33,6 +38,8 @@ import {
 import { AuthGoogleService } from './services/auth.google.service';
 import { AuthLoginService } from './services/auth.login.service';
 import { AuthMongoService } from './services/auth.mongo.service';
+import { Response } from 'express';
+import { UserRepo } from '@/repositories/user.repo';
 
 @Controller('/auth')
 export class AuthController {
@@ -44,6 +51,7 @@ export class AuthController {
         private readonly authGoogleService: AuthGoogleService,
         private readonly loginService: AuthLoginService,
         private readonly jwtService: JwtService,
+        private readonly userRepo: UserRepo,
     ) {
         //
     }
@@ -71,6 +79,8 @@ export class AuthController {
     async login(
         @Body(new TrimBodyPipe(), new JoiValidationPipe(loginBodySchema))
         body: ILoginBody,
+        @Res({ passthrough: true })
+        response: Response,
     ) {
         try {
             const authenticateResult = await this.loginService.authenticate(
@@ -105,6 +115,11 @@ export class AuthController {
                 userId: authenticateResult.user._id,
                 createdBy: authenticateResult.user._id,
             });
+            response.cookie('refreshToken', refreshToken.token, {
+                httpOnly: true,
+                maxAge: +refreshToken.expiresIn * 1000,
+                // sameSite: 'none',
+            });
             return new SuccessResponse({
                 profile: authenticateResult.user,
                 accessToken,
@@ -118,12 +133,21 @@ export class AuthController {
     @Post('register')
     async register(
         @Body(new TrimBodyPipe(), new JoiValidationPipe(registerBodySchema))
-        body: ILoginBody,
+        body: IRegisterBody,
     ) {
-        return new SuccessResponse({
-            username: body.email,
-            password: body.password,
+        const isUserExist = await this.userRepo.findOne({ email: body.email });
+        if (isUserExist) {
+            return new ErrorResponse(
+                HttpStatus.ITEM_ALREADY_EXIST,
+                'Email already exists',
+                [],
+            );
+        }
+        const user = await this.userMongoService.createUser({
+            email: body.email,
+            password: hashPassword(body.password),
         });
+        return new SuccessResponse(user);
     }
     catch(error) {
         return new InternalServerErrorException(error);
@@ -166,7 +190,8 @@ export class AuthController {
     @Get('/refresh-token')
     async refreshToken(@Req() req) {
         try {
-            const token = extractToken(req.headers.authorization || '');
+            // const token = extractToken(req.headers.authorization || '');
+            const token = req.cookies?.refreshToken;
             if (!token) {
                 const message = await this.i18n.translate('errors.401');
                 return new ErrorResponse(HttpStatus.UNAUTHORIZED, message, []);

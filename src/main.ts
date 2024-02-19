@@ -34,6 +34,5 @@ async function bootstrap() {
     app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
 
     await app.listen(configService.get(ConfigKey.PORT));
-
 }
 bootstrap();

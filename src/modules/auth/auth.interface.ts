@@ -11,8 +11,8 @@ export interface ILoginBody {
 }
 
 export interface IRegisterBody {
-    email?: string;
-    password?: string;
+    email: string;
+    password: string;
 }
 
 export interface IUpdateUserProfileBody {
