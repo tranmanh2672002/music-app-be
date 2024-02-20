@@ -3,6 +3,7 @@ import { SystemRole, SystemRoleFilter, UserOrderBy } from './user.constant';
 import { ObjectId } from 'mongoose';
 
 export interface IUserCreateBody {
+    provider: string;
     email: string;
     password?: string;
     createdBy?: ObjectId;

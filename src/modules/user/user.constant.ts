@@ -1,6 +1,6 @@
 export const MODULE_NAME = 'user';
 
-export const userAttributes = ['_id', 'name', 'email', 'url'];
+export const userAttributes = ['_id', 'email', 'provider'];
 
 export enum UserOrderBy {
     EMAIL = 'email',

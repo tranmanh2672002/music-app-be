@@ -23,7 +23,7 @@ import { ErrorResponse, SuccessResponse } from 'src/common/helpers/response';
 import { JoiValidationPipe } from 'src/common/pipe/joi.validation.pipe';
 import { UserMongoService } from '../user/services/user.mongo.service';
 import { userAttributes } from '../user/user.constant';
-import { UserTokenType } from './auth.constant';
+import { AuthProvider, UserTokenType } from './auth.constant';
 import {
     ILoginBody,
     IRegisterBody,
@@ -143,6 +143,7 @@ export class AuthController {
             );
         }
         const user = await this.userMongoService.createUser({
+            provider: AuthProvider.EMAIL,
             email: body.email,
             password: hashPassword(body.password),
         });

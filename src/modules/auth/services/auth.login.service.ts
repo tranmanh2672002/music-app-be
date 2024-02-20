@@ -1,3 +1,4 @@
+import { HttpStatus } from '@/common/constants';
 import ConfigKey from '@/common/config/config-key';
 import { UserMongoService } from '@/modules/user/services/user.mongo.service';
 import jwt from 'jsonwebtoken';
@@ -14,6 +15,8 @@ import { I18nService } from 'nestjs-i18n';
 
 import { SystemRole, userAttributes } from '@/modules/user/user.constant';
 import { IUser } from '@/modules/user/user.interface';
+import { UserRepo } from '@/repositories/user.repo';
+import { ErrorResponse } from '@/common/helpers/response';
 interface IAuthenticateResult {
     success: boolean;
     errorMessage?: string;
@@ -28,6 +31,7 @@ export class AuthLoginService {
         private readonly authGoogleService: AuthGoogleService,
         private readonly userMongoService: UserMongoService,
         private readonly i18n: I18nService,
+        private readonly userRepo: UserRepo,
     ) {}
     private readonly logger = createWinstonLogger(
         MODULE_NAME,
@@ -63,11 +67,12 @@ export class AuthLoginService {
         password: string,
     ): Promise<IAuthenticateResult> {
         try {
-            const user = (await this.userMongoService.getUserByField(
-                [...userAttributes, 'password'],
-                'email',
-                email,
-            )) as IUser;
+            const user = (await this.userRepo
+                .findOne({
+                    email,
+                    provider: AuthProvider.EMAIL,
+                })
+                .lean()) as IUser;
 
             if (!user || !password || !compareSync(password, user.password)) {
                 return {
@@ -111,9 +116,22 @@ export class AuthLoginService {
                 'email',
                 verifyResult.googleData?.email,
             )) as IUser;
-            if (!user) {
+            if (user) {
+                if (user.provider === AuthProvider.EMAIL) {
+                    return {
+                        success: false,
+                        errorMessage: 'Email already exists',
+                    };
+                } else {
+                    return {
+                        success: true,
+                        user,
+                    };
+                }
+            } else {
                 await this.userMongoService.createUser({
                     email: verifyResult.googleData?.email,
+                    provider: AuthProvider.GOOGLE,
                 });
                 const newUser = (await this.userMongoService.getUserByField(
                     [...userAttributes, 'password'],
@@ -125,10 +143,6 @@ export class AuthLoginService {
                     user: newUser,
                 };
             }
-            return {
-                success: true,
-                user,
-            };
         } catch (error) {
             this.logger.error('Error in authenticateByGoogle: ', error);
             return {

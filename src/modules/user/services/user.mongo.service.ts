@@ -121,7 +121,6 @@ export class UserMongoService {
         try {
             const user = await this.userModel
                 .findOne({
-                    ...softDeleteCondition,
                     [field]: value,
                 })
                 .select(userAttributes)
@@ -163,7 +162,8 @@ export class UserMongoService {
                     ...softDeleteCondition,
                     _id: { $in: ids },
                 })
-                .select(userAttributes);
+                .select(userAttributes)
+                .lean();
             return users;
         } catch (error) {
             this.logger.error('Error in getUsersByIds service', error);
@@ -171,7 +171,7 @@ export class UserMongoService {
         }
     }
 
-    async createUser(user: IUserCreateBody): Promise<UserDocument> {
+    async createUser(user: IUserCreateBody) {
         try {
             const newUser = new this.userModel(user);
             const insertedUser = await newUser.save();

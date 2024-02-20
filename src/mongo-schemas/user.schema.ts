@@ -18,7 +18,12 @@ export type UserDocument = User & Document;
 })
 export class User extends MongoBaseSchema {
     @Prop({
-        required: false,
+        required: true,
+        type: String,
+    })
+    provider: string;
+    @Prop({
+        required: true,
         type: String,
         maxLength: INPUT_TEXT_MAX_LENGTH,
         trim: true,
