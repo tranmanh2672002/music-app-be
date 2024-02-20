@@ -124,7 +124,8 @@ export class UserMongoService {
                     ...softDeleteCondition,
                     [field]: value,
                 })
-                .select(userAttributes);
+                .select(userAttributes)
+                .lean();
             return user;
         } catch (error) {
             this.logger.error('Error in getUserByField service', error);
@@ -181,10 +182,7 @@ export class UserMongoService {
         }
     }
 
-    async updateUser(
-        id: ObjectId,
-        user: IUserUpdateBody,
-    ): Promise<UserDocument> {
+    async updateUser(id: ObjectId, user: IUserUpdateBody) {
         try {
             await this.userModel.updateOne({ _id: id }, user);
             const updatedUser = await this.getUserById(userAttributes, id);
