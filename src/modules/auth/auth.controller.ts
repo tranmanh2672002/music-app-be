@@ -123,7 +123,6 @@ export class AuthController {
             return new SuccessResponse({
                 profile: authenticateResult.user,
                 accessToken,
-                refreshToken,
             });
         } catch (error) {
             return new InternalServerErrorException(error);
@@ -188,7 +187,11 @@ export class AuthController {
     }
 
     @Get('/refresh-token')
-    async refreshToken(@Req() req) {
+    async refreshToken(
+        @Req() req,
+        @Res({ passthrough: true })
+        response: Response,
+    ) {
         try {
             // const token = extractToken(req.headers.authorization || '');
             const token = req.cookies?.refreshToken;
@@ -233,6 +236,11 @@ export class AuthController {
                 loginUser,
                 newHashToken,
             );
+            response.cookie('refreshToken', refreshToken.token, {
+                httpOnly: true,
+                maxAge: +refreshToken.expiresIn * 1000,
+                // sameSite: 'none',
+            });
 
             await this.authMongoService.createUserToken({
                 token: refreshToken.token,

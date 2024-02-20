@@ -6,10 +6,12 @@ import helmet from 'helmet';
 import { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface';
 import { AppModule } from './app.module';
 import ConfigKey from './common/config/config-key';
+import cookieParser from 'cookie-parser';
 
 async function bootstrap() {
     const app = await NestFactory.create<NestExpressApplication>(AppModule);
     app.use(helmet());
+    app.use(cookieParser());
     const configService = app.get(ConfigService);
     const whiteList = configService.get(ConfigKey.CORS_WHITELIST) || '*';
     const corsOptions: CorsOptions = {

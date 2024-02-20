@@ -1,3 +1,4 @@
+import { UserRepo } from './../../repositories/user.repo';
 import { UserToken, UserTokenSchema } from '@/mongo-schemas/user-token.schema';
 import { User, UserSchema } from '@/mongo-schemas/user.schema';
 import { Module } from '@nestjs/common';
@@ -24,6 +25,7 @@ import { AuthMongoService } from './services/auth.mongo.service';
         AuthGoogleService,
         AuthLoginService,
         UserMongoService,
+        UserRepo,
     ],
 })
 export class AuthModule {
