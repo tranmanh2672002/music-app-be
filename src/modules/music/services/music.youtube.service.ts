@@ -1,9 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createWinstonLogger } from 'src/common/services/winston.service';
-import { MODULE_NAME } from '../music.constant';
+import {
+    MODULE_NAME,
+    MUSIC_YOUTUBE_BASE_URL,
+    MUSIC_YOUTUBE_TYPE,
+} from '../music.constant';
 import { MusicClient } from 'youtubei';
 import ytdl from '@distube/ytdl-core';
+import {
+    convertToMusicYoutubeSongDetail,
+    convertToMusicYoutubeSongList,
+} from '../music.helper';
 
 @Injectable()
 export class MusicService {
@@ -18,8 +26,11 @@ export class MusicService {
 
     async search(keyword: string) {
         try {
-            const result = await this.musicClient.search(keyword, 'song');
-            return result;
+            const result = await this.musicClient.search(
+                keyword,
+                MUSIC_YOUTUBE_TYPE.SONG,
+            );
+            return convertToMusicYoutubeSongList(result?.items);
         } catch (error) {
             this.logger.error('Error search in music service', error);
             throw error;
@@ -28,21 +39,18 @@ export class MusicService {
 
     async getDetail(id: string) {
         try {
-            const info = await ytdl.getInfo(
-                'https://www.youtube.com/watch?v=' + id,
-            );
+            const info = await ytdl.getInfo(MUSIC_YOUTUBE_BASE_URL + id);
             if (info && info?.formats) {
                 const audioFormats = info.formats
                     .filter((x) => x.mimeType?.startsWith('audio/'))
                     .sort((a, b) => {
                         return (b?.audioBitrate || 0) - (a?.audioBitrate || 0);
                     });
-                const data = {
+                return convertToMusicYoutubeSongDetail(
                     id,
-                    url: audioFormats[0].url,
-                    detail: info.videoDetails,
-                };
-                return data;
+                    audioFormats[0]?.url,
+                    info?.videoDetails,
+                );
             }
             return false;
         } catch (error) {
