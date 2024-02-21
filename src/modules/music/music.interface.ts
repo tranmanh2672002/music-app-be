@@ -5,7 +5,7 @@ export interface IMusicSearchQuery {
 export interface IMusicYoutubeSong {
     id: string;
     title: string;
-    artists: {
+    artist: {
         id: string;
         name: string;
     };
@@ -21,7 +21,7 @@ export interface IMusicYoutubeSongDetail {
     id: string;
     url: string;
     title: string;
-    artists: {
+    artist: {
         id: string;
         name: string;
         thumbnails: {

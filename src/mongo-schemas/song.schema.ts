@@ -50,15 +50,9 @@ export class Song extends MongoBaseSchema {
 
     @Prop({
         required: true,
-        type: SchemaTypes.ObjectId,
-    })
-    songId: Types.ObjectId;
-
-    @Prop({
-        required: true,
         type: String,
     })
-    url: string;
+    youtubeId: string;
 
     @Prop({
         required: true,
@@ -70,7 +64,7 @@ export class Song extends MongoBaseSchema {
         required: true,
         type: String,
     })
-    author: string;
+    artist: string;
 }
 export const SongSchema = SchemaFactory.createForClass(Song);
 

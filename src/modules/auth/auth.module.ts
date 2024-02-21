@@ -13,8 +13,8 @@ import { AuthMongoService } from './services/auth.mongo.service';
 
 @Module({
     imports: [
-        MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
         MongooseModule.forFeature([
+            { name: User.name, schema: UserSchema },
             { name: UserToken.name, schema: UserTokenSchema },
         ]),
     ],

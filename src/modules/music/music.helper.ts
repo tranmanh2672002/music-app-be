@@ -7,7 +7,7 @@ export const convertToMusicYoutubeSongList = (
         return {
             id: item?.id,
             title: item?.title,
-            artists: {
+            artist: {
                 id: item?.artists.id,
                 name: item?.artists.name,
             },
@@ -26,7 +26,7 @@ export const convertToMusicYoutubeSongDetail = (
         id,
         url,
         title: data?.title,
-        artists: {
+        artist: {
             id: data?.author?.id,
             name: data?.author?.name,
             thumbnails: data?.author?.thumbnails,

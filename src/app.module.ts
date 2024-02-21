@@ -14,6 +14,8 @@ import { AuthModule } from './modules/auth/auth.module';
 import { CommonModule } from './modules/common/common.module';
 import { MusicModule } from './modules/music/music.module';
 import { EventsModule } from './modules/socket/socket.module';
+import { PlaylistModule } from './modules/playlist/playlist.module';
+import { SongModule } from './modules/song/song.module';
 
 @Module({
     imports: [
@@ -30,6 +32,8 @@ import { EventsModule } from './modules/socket/socket.module';
         UserModule,
         MusicModule,
         EventsModule,
+        PlaylistModule,
+        SongModule,
     ],
     controllers: [AppController],
     providers: [

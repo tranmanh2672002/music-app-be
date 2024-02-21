@@ -5,8 +5,6 @@ import {
     Param,
     Query,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { I18nService } from 'nestjs-i18n';
 import { ErrorResponse, SuccessResponse } from 'src/common/helpers/response';
 import { JoiValidationPipe } from 'src/common/pipe/joi.validation.pipe';
 import { HttpStatus } from './../../common/constants';
@@ -16,11 +14,7 @@ import { MusicService } from './services/music.youtube.service';
 
 @Controller('music')
 export class MusicController {
-    constructor(
-        private readonly i18n: I18nService,
-        private readonly configService: ConfigService,
-        private readonly musicService: MusicService,
-    ) {}
+    constructor(private readonly musicService: MusicService) {}
 
     @Get('/search')
     async search(

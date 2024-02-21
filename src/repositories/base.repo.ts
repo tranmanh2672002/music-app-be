@@ -93,7 +93,7 @@ export class BaseRepository<T extends Omit<Document, 'delete'>> {
         return this.model.updateOne(filter, update, options);
     }
 
-    delete(filter: FilterQuery<T>, deletedBy: string | Types.ObjectId) {
+    delete(filter: FilterQuery<T>, deletedBy?: string | Types.ObjectId) {
         return this.model.delete(filter, deletedBy);
     }
 }

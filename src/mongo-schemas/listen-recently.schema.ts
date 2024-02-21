@@ -3,6 +3,7 @@ import { MongoCollection } from 'src/common/constants';
 import { Document, Types, SchemaTypes } from 'mongoose';
 import { MongoBaseSchema } from './base.schema';
 import MongooseDelete from 'mongoose-delete';
+import { User } from './user.schema';
 
 export type ListenRecentlyDocument = ListenRecently & Document;
 
@@ -20,7 +21,7 @@ export class ListenRecently extends MongoBaseSchema {
     @Prop({
         required: true,
         type: SchemaTypes.ObjectId,
-        ref: MongoCollection.USERS,
+        ref: User.name,
     })
     userId: Types.ObjectId;
     @Prop({

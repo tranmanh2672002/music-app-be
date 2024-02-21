@@ -6,6 +6,7 @@ import { SchemaTypes } from 'mongoose';
 import MongooseDelete from 'mongoose-delete';
 import { Song, SongSchema } from './song.schema';
 import { Playlist, PlaylistSchema } from './playlist.schema';
+import { User } from './user.schema';
 
 export type PostDocument = Post & Document;
 
@@ -47,7 +48,7 @@ export class Post extends MongoBaseSchema {
     @Prop({
         required: true,
         type: SchemaTypes.ObjectId,
-        ref: MongoCollection.USERS,
+        ref: User.name,
     })
     userId: Types.ObjectId;
 
@@ -72,7 +73,7 @@ export class Post extends MongoBaseSchema {
     @Prop({
         required: false,
         type: [SchemaTypes.ObjectId],
-        ref: MongoCollection.USERS,
+        ref: User.name,
         default: [],
     })
     userLikes: Types.ObjectId[];

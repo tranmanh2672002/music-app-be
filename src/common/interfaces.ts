@@ -12,3 +12,9 @@ export interface ICommonListQuery {
     orderDirection?: OrderDirection;
     keyword?: string;
 }
+
+export interface IThumbnail {
+    url: string;
+    width: number;
+    height: number;
+}

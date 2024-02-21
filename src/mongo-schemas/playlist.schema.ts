@@ -1,8 +1,10 @@
+import { User } from './user.schema';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { MongoCollection } from 'src/common/constants';
 import { Document, Types, SchemaTypes } from 'mongoose';
 import { MongoBaseSchema } from './base.schema';
 import MongooseDelete from 'mongoose-delete';
+import { Song } from './song.schema';
 
 export type PlaylistDocument = Playlist & Document;
 
@@ -25,13 +27,14 @@ export class Playlist extends MongoBaseSchema {
     @Prop({
         required: true,
         type: SchemaTypes.ObjectId,
-        ref: MongoCollection.USERS,
+        ref: User.name,
     })
     userId: Types.ObjectId;
     @Prop({
         required: true,
         type: [SchemaTypes.ObjectId],
-        ref: MongoCollection.SONGS,
+        ref: Song.name,
+        default: [],
     })
     songIds: Types.ObjectId[];
 }
