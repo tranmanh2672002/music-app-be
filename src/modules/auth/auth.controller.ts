@@ -142,12 +142,12 @@ export class AuthController {
                 [],
             );
         }
-        const user = await this.userMongoService.createUser({
+        await this.userMongoService.createUser({
             provider: AuthProvider.EMAIL,
             email: body.email,
             password: hashPassword(body.password),
         });
-        return new SuccessResponse(user);
+        return new SuccessResponse(true);
     }
     catch(error) {
         return new InternalServerErrorException(error);
