@@ -1,6 +1,6 @@
 export const MODULE_NAME = 'user';
 
-export const userAttributes = ['_id', 'email', 'provider'];
+export const userAttributes = ['_id', 'email', 'provider', 'recentlyMusicIds'];
 
 export enum UserOrderBy {
     EMAIL = 'email',
@@ -25,3 +25,5 @@ export enum UserField {
     EMAIL = 'email',
     SYSTEM_ROLE = 'systemRole',
 }
+
+export const RECENTLY_MUSIC_LIMIT = 30;

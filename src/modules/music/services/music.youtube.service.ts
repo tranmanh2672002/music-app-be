@@ -52,7 +52,7 @@ export class MusicService {
                     info?.videoDetails,
                 );
             }
-            return false;
+            return null;
         } catch (error) {
             this.logger.error('Error get detail in music service', error);
             throw error;

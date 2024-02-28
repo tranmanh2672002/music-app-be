@@ -2,6 +2,11 @@ import { INPUT_TEXT_MAX_LENGTH, Regex } from './../../common/constants';
 import Joi from 'src/plugins/joi';
 import { CommonListQuerySchema } from 'src/common/constants';
 import { UserOrderBy, SystemRole, SystemRoleFilter } from './user.constant';
+import { musicIdSchema } from '../common/common.validate';
+
+export const userRecentlyMusicUpdateSchema = Joi.object().keys({
+    id: musicIdSchema,
+});
 
 export const userListQuerySchema = Joi.object().keys({
     ...CommonListQuerySchema,

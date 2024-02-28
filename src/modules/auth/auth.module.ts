@@ -10,6 +10,8 @@ import { AuthGoogleService } from './services/auth.google.service';
 import { AuthLoginService } from './services/auth.login.service';
 
 import { AuthMongoService } from './services/auth.mongo.service';
+import { MusicService } from '../music/services/music.youtube.service';
+import { MusicClient } from 'youtubei';
 
 @Module({
     imports: [
@@ -26,6 +28,8 @@ import { AuthMongoService } from './services/auth.mongo.service';
         AuthLoginService,
         UserMongoService,
         UserRepo,
+        MusicService,
+        MusicClient,
     ],
 })
 export class AuthModule {

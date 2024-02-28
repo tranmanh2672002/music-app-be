@@ -22,6 +22,7 @@ import {
     mongoIdSchema,
     updateUserSchema,
     userListQuerySchema,
+    userRecentlyMusicUpdateSchema,
 } from './user.validator';
 import {
     IUserCreateBody,
@@ -31,9 +32,9 @@ import {
 import { userAttributes, UserField } from './user.constant';
 import { ObjectId } from 'mongoose';
 import { AuthenticationGuard } from '@/common/guards/authentication.guard';
-import { AuthorizationGuard } from '@/common/guards/authorization.guard';
+import { musicIdSchema } from '../common/common.validate';
 
-@UseGuards(AuthenticationGuard, AuthorizationGuard)
+@UseGuards(AuthenticationGuard)
 @Controller('user')
 export class UserController {
     constructor(
@@ -51,6 +52,30 @@ export class UserController {
     ) {
         try {
             const data = await this.userService.getUserList(query);
+            return new SuccessResponse(data);
+        } catch (error) {
+            return new InternalServerErrorException(error);
+        }
+    }
+
+    // GET recently music
+    @Get('/recently-music')
+    async getRecentlyMusic(@Req() req) {
+        try {
+            const user = await this.userService.getUserById(
+                userAttributes,
+                req?.loginUser?._id,
+            );
+            if (!user) {
+                return new ErrorResponse(
+                    HttpStatus.ITEM_NOT_FOUND,
+                    this.i18n.t('user.error.userNotFound'),
+                    [],
+                );
+            }
+            const data = await this.userService.getRecentlyMusic(
+                user?.recentlyMusicIds || [],
+            );
             return new SuccessResponse(data);
         } catch (error) {
             return new InternalServerErrorException(error);
@@ -98,6 +123,36 @@ export class UserController {
             }
             const newUser = await this.userService.createUser(body);
             return new SuccessResponse(newUser);
+        } catch (error) {
+            return new InternalServerErrorException(error);
+        }
+    }
+
+    // recently music
+    @Patch('/recently-music')
+    async addRecentlyMusic(
+        @Body(new JoiValidationPipe(userRecentlyMusicUpdateSchema))
+        body: { id: string },
+        @Req() req,
+    ) {
+        try {
+            const user = await this.userService.getUserById(
+                userAttributes,
+                req?.loginUser?._id,
+            );
+            if (!user) {
+                return new ErrorResponse(
+                    HttpStatus.ITEM_NOT_FOUND,
+                    this.i18n.t('user.error.userNotFound'),
+                    [],
+                );
+            }
+
+            await this.userService.updateRecentlyMusicId(
+                req?.loginUser?._id,
+                body.id,
+            );
+            return new SuccessResponse(true);
         } catch (error) {
             return new InternalServerErrorException(error);
         }

@@ -34,6 +34,12 @@ export class User extends MongoBaseSchema {
         type: String,
     })
     password: string;
+    @Prop({
+        required: false,
+        type: [String],
+        default: [],
+    })
+    recentlyMusicIds: string[];
 }
 export const UserSchema = SchemaFactory.createForClass(User);
 

@@ -14,6 +14,7 @@ import { createWinstonLogger } from 'src/common/services/winston.service';
 import { User, UserDocument } from 'src/mongo-schemas/user.schema';
 import {
     MODULE_NAME,
+    RECENTLY_MUSIC_LIMIT,
     SystemRole,
     SystemRoleFilter,
     userAttributes,
@@ -23,6 +24,8 @@ import {
     IUserListQuery,
     IUserUpdateBody,
 } from '../user.interface';
+import { UserRepo } from '@/repositories/user.repo';
+import { MusicService } from '@/modules/music/services/music.youtube.service';
 
 @Injectable()
 export class UserMongoService {
@@ -30,6 +33,8 @@ export class UserMongoService {
         private readonly configService: ConfigService,
         @InjectModel(User.name)
         private readonly userModel: Model<UserDocument>,
+        private readonly userRepo: UserRepo,
+        private readonly musicService: MusicService,
     ) {}
     private readonly logger = createWinstonLogger(
         MODULE_NAME,
@@ -201,5 +206,35 @@ export class UserMongoService {
             this.logger.error('Error in deleteUser service', error);
             throw error;
         }
+    }
+
+    // recently music
+    async updateRecentlyMusicId(userId: ObjectId, musicId: string) {
+        try {
+            await this.userRepo.updateOne(
+                { _id: userId },
+                {
+                    $push: {
+                        recentlyMusicIds: {
+                            $each: [musicId],
+                            $position: 0,
+                            $slice: RECENTLY_MUSIC_LIMIT,
+                        },
+                    },
+                },
+            );
+        } catch (error) {
+            this.logger.error('Error in updateRecentlyMusicIds service', error);
+            throw error;
+        }
+    }
+
+    async getRecentlyMusic(ids: string[]) {
+        const data = await Promise.all(
+            ids.map((id) => {
+                return this.musicService.getDetail(id);
+            }),
+        );
+        return data;
     }
 }

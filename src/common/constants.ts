@@ -53,6 +53,7 @@ export const Regex = {
     EMAIL: /^[\w-\.]+@([\w-]+\.)+[\w-]{2,20}$/,
     NUMBER: /^(?:[0-9]\d*|)$/,
     CODE: /^[a-zA-Z\-_0-9]+$/,
+    MUSIC_ID: /^[a-zA-Z0-9-_]{11}$/,
 };
 export const softDeleteCondition = {
     $or: [
@@ -123,6 +124,5 @@ export enum MongoCollection {
     USER_TOKENS = 'user_tokens',
     SONGS = 'songs',
     PLAYLISTS = 'playlists',
-    LISTEN_RECENTLY = 'listen_recently',
     POSTS = 'posts',
 }

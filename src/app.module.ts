@@ -16,7 +16,6 @@ import { MusicModule } from './modules/music/music.module';
 import { EventsModule } from './modules/socket/socket.module';
 import { PlaylistModule } from './modules/playlist/playlist.module';
 import { SongModule } from './modules/song/song.module';
-
 @Module({
     imports: [
         ConfigModule.forRoot({
