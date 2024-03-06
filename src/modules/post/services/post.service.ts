@@ -1,4 +1,4 @@
-import { POST_TYPE } from './../post.interface';
+import { IPostListQuery, IPostUpdate, POST_TYPE } from './../post.interface';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createWinstonLogger } from 'src/common/services/winston.service';
@@ -6,7 +6,10 @@ import { MODULE_NAME } from '../post.constant';
 import { PostRepo } from '@/repositories/post.repo';
 import { IPostCreate } from '../post.interface';
 import { MusicService } from '@/modules/music/services/music.youtube.service';
-import { IMusicYoutubeSongDetail } from '@/modules/music/music.interface';
+import { OrderDirection } from '@/common/constants';
+import { FilterQuery, PipelineStage } from 'mongoose';
+import { Post } from '@/mongo-schemas/post.schema';
+import { get } from 'lodash';
 
 @Injectable()
 export class PostService {
@@ -20,30 +23,77 @@ export class PostService {
         this.configService,
     );
 
-    async getList() {
+    async getList(params: IPostListQuery) {
         try {
-            const posts = await this.postRepo.findAll();
-            return posts;
+            const { orderBy, orderDirection, page, limit } = params;
+            const filter: FilterQuery<Post> = { $and: [] };
+            if (params.keyword) {
+                filter.$and.push({
+                    $or: [
+                        {
+                            name: {
+                                $regex: `.*${params.keyword}.*`,
+                                $options: 'i',
+                            },
+                        },
+                        {
+                            $expr: {
+                                $regexMatch: {
+                                    input: { $toString: '$value' },
+                                    regex: params.keyword,
+                                    options: 'i',
+                                },
+                            },
+                        },
+                    ],
+                });
+            }
+            if (!filter.$and.length) {
+                delete filter.$and;
+            }
+            const query: PipelineStage[] = [
+                { $match: filter },
+                {
+                    $facet: {
+                        data: [
+                            {
+                                $sort: {
+                                    [orderBy]:
+                                        orderDirection === OrderDirection.ASC
+                                            ? 1
+                                            : -1,
+                                },
+                            },
+                            { $skip: (+page - 1) * +limit },
+                            { $limit: +limit },
+                        ],
+                        total: [{ $count: 'count' }],
+                    },
+                },
+            ];
+            const [data] = await this.postRepo.aggregate(query).exec();
+            const items = get(data, 'data', []);
+            const totalItems = get(data, 'total.0.count', 0) ?? 0;
+            return { items, totalItems };
         } catch (error) {
             this.logger.error('Error get list in post service', error);
             throw error;
         }
     }
 
-    async getDetail(id: string) {
+    async getById(id: string) {
         try {
-            const post = await this.postRepo.findById(id);
-            // populate posts
+            const post = await this.postRepo.findOne({ _id: id });
             return post;
         } catch (error) {
-            this.logger.error('Error get in post service', error);
+            this.logger.error('Error getById in post service', error);
             throw error;
         }
     }
 
-    async getById(id: string) {
+    async getByUserId(id: string) {
         try {
-            const post = await this.postRepo.findById(id);
+            const post = await this.postRepo.find({ userId: id });
             return post;
         } catch (error) {
             this.logger.error('Error getById in post service', error);
@@ -72,6 +122,16 @@ export class PostService {
             return post;
         } catch (error) {
             this.logger.error('Error create in post service', error);
+            throw error;
+        }
+    }
+
+    async update(data: IPostUpdate, id: string) {
+        try {
+            const res = await this.postRepo.findByIdAndUpdate(id, data);
+            return res;
+        } catch (error) {
+            this.logger.error('Error update in post service', error);
             throw error;
         }
     }

@@ -7,6 +7,8 @@ import {
     Types,
     UpdateQuery,
     UpdateWithAggregationPipeline,
+    AggregateOptions,
+    PipelineStage,
 } from 'mongoose';
 import { SoftDeleteModel } from 'mongoose-delete';
 
@@ -99,5 +101,9 @@ export class BaseRepository<T extends Omit<Document, 'delete'>> {
 
     delete(filter: FilterQuery<T>, deletedBy?: string | Types.ObjectId) {
         return this.model.delete(filter, deletedBy);
+    }
+
+    aggregate<T = any>(pipelines: PipelineStage[], option?: AggregateOptions) {
+        return this.model.aggregate<T>(pipelines, option);
     }
 }

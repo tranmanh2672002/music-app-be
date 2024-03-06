@@ -1,23 +1,29 @@
 import { AuthenticationGuard } from './../../common/guards/authentication.guard';
-import { IPostCreate } from './post.interface';
+import { IPostCreate, IPostListQuery, IPostUpdate } from './post.interface';
 import {
     Controller,
     Get,
     Post,
     InternalServerErrorException,
-    Query,
     Body,
     Req,
     UseGuards,
     Delete,
     Param,
+    Patch,
+    Query,
 } from '@nestjs/common';
 import { JoiValidationPipe } from 'src/common/pipe/joi.validation.pipe';
-import { postCreateSchema } from './post.validator';
+import {
+    postCreateSchema,
+    postQuerySchema,
+    postUpdateSchema,
+} from './post.validator';
 import { PostService } from './services/post.service';
 import { ErrorResponse, SuccessResponse } from '@/common/helpers/response';
 import { HttpStatus } from '@/common/constants';
 import { UserRepo } from '@/repositories/user.repo';
+import { PostRepo } from '@/repositories/post.repo';
 
 @UseGuards(AuthenticationGuard)
 @Controller('post')
@@ -25,21 +31,70 @@ export class PostController {
     constructor(
         private readonly postService: PostService,
         private readonly userRepo: UserRepo,
+        private readonly postRepo: PostRepo,
     ) {}
 
-    @Get('/get-list')
-    async getList(@Req() req) {
+    @Get('/list-new')
+    async getList(
+        @Query(new JoiValidationPipe(postQuerySchema))
+        query: IPostListQuery,
+    ) {
         try {
-            const posts = await this.postService.getList();
+            const posts = await this.postService.getList(query);
             return new SuccessResponse(posts);
         } catch (error) {
             return new InternalServerErrorException(error);
         }
     }
 
-    @Get('/get/:id/detail')
+    @Get('/my-post')
+    async getMyPost(@Req() req) {
+        try {
+            const userId = req?.loginUser?._id;
+            const isExisted = await this.userRepo.existedById(userId);
+            if (!isExisted) {
+                return new ErrorResponse(
+                    HttpStatus.NOT_FOUND,
+                    'User not found',
+                    [],
+                );
+            }
+            const posts = await this.postService.getByUserId(userId);
+            return new SuccessResponse(posts);
+        } catch (error) {
+            return new InternalServerErrorException(error);
+        }
+    }
+
+    @Get('/list/:id')
+    async getListByUserId(@Param('id') id) {
+        try {
+            const isExisted = await this.userRepo.existedById(id);
+            if (!isExisted) {
+                return new ErrorResponse(
+                    HttpStatus.NOT_FOUND,
+                    'User not found',
+                    [],
+                );
+            }
+            const posts = await this.postService.getByUserId(id);
+            return new SuccessResponse(posts);
+        } catch (error) {
+            return new InternalServerErrorException(error);
+        }
+    }
+
+    @Get('/:id')
     async getDetail(@Param('id') id) {
         try {
+            const isExisted = await this.postRepo.existedById(id);
+            if (!isExisted) {
+                return new ErrorResponse(
+                    HttpStatus.NOT_FOUND,
+                    'Post not found',
+                    [],
+                );
+            }
             const post = await this.postService.getById(id);
             return new SuccessResponse(post);
         } catch (error) {
@@ -70,7 +125,30 @@ export class PostController {
         }
     }
 
-    @Delete('/delete/:id')
+    @Patch('/:id')
+    async update(
+        @Param('id')
+        id: string,
+        @Body(new JoiValidationPipe(postUpdateSchema))
+        body: IPostUpdate,
+    ) {
+        try {
+            const isExisted = await this.postRepo.existedById(id);
+            if (!isExisted) {
+                return new ErrorResponse(
+                    HttpStatus.NOT_FOUND,
+                    'Post not found',
+                    [],
+                );
+            }
+            const post = await this.postService.update(body, id);
+            return new SuccessResponse(post);
+        } catch (error) {
+            return new InternalServerErrorException(error);
+        }
+    }
+
+    @Delete('/:id')
     async delete(
         @Param('id')
         id: string,

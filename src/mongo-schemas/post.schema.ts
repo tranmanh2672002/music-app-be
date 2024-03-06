@@ -67,7 +67,7 @@ export class Post extends MongoBaseSchema {
         required: false,
         type: Object,
     })
-    song: Object;
+    song: any;
 
     @Prop({
         required: false,
