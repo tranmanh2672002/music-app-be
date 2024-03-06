@@ -4,8 +4,7 @@ import { Document, Types } from 'mongoose';
 import { MongoBaseSchema } from './base.schema';
 import { SchemaTypes } from 'mongoose';
 import MongooseDelete from 'mongoose-delete';
-import { Song, SongSchema } from './song.schema';
-import { Playlist, PlaylistSchema } from './playlist.schema';
+import { Playlist } from './playlist.schema';
 import { User } from './user.schema';
 
 export type PostDocument = Post & Document;
@@ -60,15 +59,22 @@ export class Post extends MongoBaseSchema {
 
     @Prop({
         required: false,
-        type: SongSchema,
+        type: String,
     })
-    song: Song;
+    type: string;
 
     @Prop({
         required: false,
-        type: PlaylistSchema,
+        type: Object,
     })
-    playlist: Playlist;
+    song: Object;
+
+    @Prop({
+        required: false,
+        type: SchemaTypes.ObjectId,
+        ref: Playlist.name,
+    })
+    playlistId: Types.ObjectId;
 
     @Prop({
         required: false,
@@ -78,7 +84,7 @@ export class Post extends MongoBaseSchema {
     })
     userLikes: Types.ObjectId[];
 }
-export const PostSchema = SchemaFactory.createForClass(Song);
+export const PostSchema = SchemaFactory.createForClass(Post);
 
 PostSchema.plugin(MongooseDelete, {
     deletedBy: true,

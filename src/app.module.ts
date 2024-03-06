@@ -16,6 +16,7 @@ import { MusicModule } from './modules/music/music.module';
 import { EventsModule } from './modules/socket/socket.module';
 import { PlaylistModule } from './modules/playlist/playlist.module';
 import { SongModule } from './modules/song/song.module';
+import { PostModule } from './modules/post/post.module';
 @Module({
     imports: [
         ConfigModule.forRoot({
@@ -30,9 +31,10 @@ import { SongModule } from './modules/song/song.module';
         AuthModule,
         UserModule,
         MusicModule,
-        EventsModule,
         PlaylistModule,
         SongModule,
+        PostModule,
+        EventsModule,
     ],
     controllers: [AppController],
     providers: [

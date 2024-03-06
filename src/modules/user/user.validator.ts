@@ -5,7 +5,7 @@ import { UserOrderBy, SystemRole, SystemRoleFilter } from './user.constant';
 import { musicIdSchema } from '../common/common.validate';
 
 export const userRecentlyMusicUpdateSchema = Joi.object().keys({
-    id: musicIdSchema,
+    id: musicIdSchema.required(),
 });
 
 export const userListQuerySchema = Joi.object().keys({

@@ -32,7 +32,6 @@ import {
 import { userAttributes, UserField } from './user.constant';
 import { ObjectId } from 'mongoose';
 import { AuthenticationGuard } from '@/common/guards/authentication.guard';
-import { musicIdSchema } from '../common/common.validate';
 
 @UseGuards(AuthenticationGuard)
 @Controller('user')

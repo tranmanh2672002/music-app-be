@@ -16,6 +16,10 @@ export class BaseRepository<T extends Omit<Document, 'delete'>> {
         this.model = model;
     }
 
+    findAll(projection?: ProjectionType<T> | null) {
+        return this.model.find({}, projection);
+    }
+
     findOne(filter: FilterQuery<T>, projection?: ProjectionType<T> | null) {
         return this.model.findOne(filter, projection);
     }
