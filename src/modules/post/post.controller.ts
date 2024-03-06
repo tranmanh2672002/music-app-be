@@ -125,6 +125,37 @@ export class PostController {
         }
     }
 
+    @Patch('/like/:id')
+    async updateUserLike(
+        @Param('id')
+        id: string,
+        @Req() req,
+    ) {
+        try {
+            const userId = req?.loginUser?._id;
+            const isUserExisted = await this.userRepo.existedById(userId);
+            if (!isUserExisted) {
+                return new ErrorResponse(
+                    HttpStatus.NOT_FOUND,
+                    'User not found',
+                    [],
+                );
+            }
+            const isPostExisted = await this.postRepo.existedById(id);
+            if (!isPostExisted) {
+                return new ErrorResponse(
+                    HttpStatus.NOT_FOUND,
+                    'Post not found',
+                    [],
+                );
+            }
+            const post = await this.postService.updateUserLike(id, userId);
+            return new SuccessResponse(post);
+        } catch (error) {
+            return new InternalServerErrorException(error);
+        }
+    }
+
     @Patch('/:id')
     async update(
         @Param('id')
@@ -158,7 +189,7 @@ export class PostController {
             if (!post) {
                 return new ErrorResponse(
                     HttpStatus.NOT_FOUND,
-                    'Song not exists',
+                    'Post not exists',
                     [],
                 );
             }

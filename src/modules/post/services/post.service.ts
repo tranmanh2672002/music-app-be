@@ -136,6 +136,28 @@ export class PostService {
         }
     }
 
+    async updateUserLike(id: string, userId: string) {
+        try {
+            const post = await this.postRepo.findById(id);
+            if (post?.userLikes?.includes(userId)) {
+                const post = await this.postRepo.findByIdAndUpdate(id, {
+                    $pull: { userLikes: userId },
+                });
+                return post.userLikes;
+            } else {
+                const post = await this.postRepo.findByIdAndUpdate(
+                    id,
+                    { $addToSet: { userLikes: userId } },
+                    { new: true },
+                );
+                return post.userLikes;
+            }
+        } catch (error) {
+            this.logger.error('Error updateUserLike in post service', error);
+            throw error;
+        }
+    }
+
     async delete(id: string) {
         try {
             await this.postRepo.delete({ _id: id });
