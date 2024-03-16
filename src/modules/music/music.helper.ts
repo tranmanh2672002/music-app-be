@@ -8,8 +8,8 @@ export const convertToMusicYoutubeSongList = (
             id: item?.id,
             title: item?.title,
             artist: {
-                id: item?.artists.id,
-                name: item?.artists.name,
+                id: item?.artists?.[0].id,
+                name: item?.artists?.[0].name,
             },
             thumbnails: item?.thumbnails,
             duration: item?.duration,
