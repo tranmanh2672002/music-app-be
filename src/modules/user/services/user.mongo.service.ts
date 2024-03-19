@@ -229,7 +229,37 @@ export class UserMongoService {
         }
     }
 
+    async updateFavoriteMusicId(userId: ObjectId, musicId: string) {
+        try {
+            console.log('userId', userId);
+            console.log('favoriteIds', musicId);
+            const res = await this.userRepo.updateOne(
+                { _id: userId },
+                {
+                    $addToSet: {
+                        favoriteIds: musicId,
+                    },
+                },
+                { new: true, upsert: true },
+            );
+            console.log('res', res);
+        } catch (error) {
+            this.logger.error('Error in updateFavoriteMusicId service', error);
+            throw error;
+        }
+    }
+
     async getRecentlyMusic(ids: string[]) {
+        const data = await Promise.all(
+            ids.map((id) => {
+                return this.musicService.getDetail(id);
+            }),
+        );
+        return data;
+    }
+
+    // favorite
+    async getFavoriteMusic(ids: string[]) {
         const data = await Promise.all(
             ids.map((id) => {
                 return this.musicService.getDetail(id);

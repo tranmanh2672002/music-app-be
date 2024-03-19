@@ -81,6 +81,30 @@ export class UserController {
         }
     }
 
+    // GET favorite music
+    @Get('/favorite-music')
+    async getFavoriteMusic(@Req() req) {
+        try {
+            const user = await this.userService.getUserById(
+                userAttributes,
+                req?.loginUser?._id,
+            );
+            if (!user) {
+                return new ErrorResponse(
+                    HttpStatus.ITEM_NOT_FOUND,
+                    this.i18n.t('user.error.userNotFound'),
+                    [],
+                );
+            }
+            const data = await this.userService.getFavoriteMusic(
+                user?.favoriteIds || [],
+            );
+            return new SuccessResponse(data);
+        } catch (error) {
+            return new InternalServerErrorException(error);
+        }
+    }
+
     @Get(':id')
     async getUserDetail(
         @Param(new JoiValidationPipe(mongoIdSchema)) params: { id: ObjectId },
@@ -148,6 +172,36 @@ export class UserController {
             }
 
             await this.userService.updateRecentlyMusicId(
+                req?.loginUser?._id,
+                body.id,
+            );
+            return new SuccessResponse(true);
+        } catch (error) {
+            return new InternalServerErrorException(error);
+        }
+    }
+
+    // favorite music
+    @Patch('/favorite-music')
+    async addFavoriteMusic(
+        @Body(new JoiValidationPipe(userRecentlyMusicUpdateSchema))
+        body: { id: string },
+        @Req() req,
+    ) {
+        try {
+            const user = await this.userService.getUserById(
+                userAttributes,
+                req?.loginUser?._id,
+            );
+            if (!user) {
+                return new ErrorResponse(
+                    HttpStatus.ITEM_NOT_FOUND,
+                    this.i18n.t('user.error.userNotFound'),
+                    [],
+                );
+            }
+
+            await this.userService.updateFavoriteMusicId(
                 req?.loginUser?._id,
                 body.id,
             );

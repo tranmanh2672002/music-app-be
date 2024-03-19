@@ -1,28 +1,27 @@
-import { AuthenticationGuard } from './../../common/guards/authentication.guard';
-import { IPlaylistAddSong, IPlaylistCreate } from './playlist.interface';
+import { HttpStatus } from '@/common/constants';
+import { ErrorResponse, SuccessResponse } from '@/common/helpers/response';
 import {
-    Controller,
-    Get,
-    Post,
-    InternalServerErrorException,
-    Query,
     Body,
+    Controller,
+    Delete,
+    Get,
+    InternalServerErrorException,
+    Param,
+    Post,
     Req,
     UseGuards,
-    Delete,
-    Param,
 } from '@nestjs/common';
 import { JoiValidationPipe } from 'src/common/pipe/joi.validation.pipe';
+import { MusicService } from '../music/services/music.youtube.service';
+import { SongService } from '../song/services/song.service';
+import { AuthenticationGuard } from './../../common/guards/authentication.guard';
+import { IPlaylistAddSong, IPlaylistCreate } from './playlist.interface';
 import {
     playlistAddSongSchema,
     playlistCreateSchema,
     playlistRemoveSongSchema,
 } from './playlist.validator';
 import { PlaylistService } from './services/playlist.service';
-import { ErrorResponse, SuccessResponse } from '@/common/helpers/response';
-import { HttpStatus } from '@/common/constants';
-import { SongService } from '../song/services/song.service';
-import { MusicService } from '../music/services/music.youtube.service';
 
 @UseGuards(AuthenticationGuard)
 @Controller('playlist')

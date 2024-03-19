@@ -1,8 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { MongoCollection } from 'src/common/constants';
-import { Document, Types } from 'mongoose';
+import { Document } from 'mongoose';
 import { MongoBaseSchema } from './base.schema';
-import { SchemaTypes } from 'mongoose';
 import MongooseDelete from 'mongoose-delete';
 
 export type SongDocument = Song & Document;
