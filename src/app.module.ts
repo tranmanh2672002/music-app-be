@@ -17,12 +17,17 @@ import { EventsModule } from './modules/socket/socket.module';
 import { PlaylistModule } from './modules/playlist/playlist.module';
 import { SongModule } from './modules/song/song.module';
 import { PostModule } from './modules/post/post.module';
+import { CacheModule } from '@nestjs/cache-manager';
 @Module({
     imports: [
         ConfigModule.forRoot({
             envFilePath: '.env',
             isGlobal: true,
             validationSchema: envSchema,
+        }),
+        CacheModule.register({
+            isGlobal: true,
+            ttl: 10000, // 10 seconds
         }),
         WinstonModule,
         I18nModule,

@@ -1,22 +1,30 @@
-import { HttpStatus } from './../../common/constants';
+import { AuthenticationGuard } from '@/common/guards/authentication.guard';
 import {
     Body,
     Controller,
+    Delete,
     Get,
     InternalServerErrorException,
-    Post,
     Param,
-    Delete,
     Patch,
+    Post,
     Query,
-    UseGuards,
     Req,
+    UseGuards,
+    UseInterceptors,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { ObjectId } from 'mongoose';
 import { I18nService } from 'nestjs-i18n';
-import { UserMongoService } from './services/user.mongo.service';
 import { ErrorResponse, SuccessResponse } from 'src/common/helpers/response';
 import { JoiValidationPipe } from 'src/common/pipe/joi.validation.pipe';
+import { HttpStatus } from './../../common/constants';
+import { UserMongoService } from './services/user.mongo.service';
+import { UserField, userAttributes } from './user.constant';
+import {
+    IUserCreateBody,
+    IUserListQuery,
+    IUserUpdateBody,
+} from './user.interface';
 import {
     createUserSchema,
     mongoIdSchema,
@@ -24,21 +32,13 @@ import {
     userListQuerySchema,
     userRecentlyMusicUpdateSchema,
 } from './user.validator';
-import {
-    IUserCreateBody,
-    IUserListQuery,
-    IUserUpdateBody,
-} from './user.interface';
-import { userAttributes, UserField } from './user.constant';
-import { ObjectId } from 'mongoose';
-import { AuthenticationGuard } from '@/common/guards/authentication.guard';
+import { CacheInterceptor } from '@nestjs/cache-manager';
 
 @UseGuards(AuthenticationGuard)
 @Controller('user')
 export class UserController {
     constructor(
         private readonly i18n: I18nService,
-        private readonly configService: ConfigService,
         private readonly userService: UserMongoService,
     ) {
         //
@@ -58,6 +58,7 @@ export class UserController {
     }
 
     // GET recently music
+    @UseInterceptors(CacheInterceptor)
     @Get('/recently-music')
     async getRecentlyMusic(@Req() req) {
         try {
@@ -81,6 +82,7 @@ export class UserController {
         }
     }
 
+    @UseInterceptors(CacheInterceptor)
     // GET favorite music
     @Get('/favorite-music')
     async getFavoriteMusic(@Req() req) {
@@ -170,10 +172,12 @@ export class UserController {
                     [],
                 );
             }
-
+            const newRecentlyMusicIds =
+                user.recentlyMusicIds?.filter((item) => item !== body.id) || [];
+            newRecentlyMusicIds.unshift(body.id);
             await this.userService.updateRecentlyMusicId(
                 req?.loginUser?._id,
-                body.id,
+                newRecentlyMusicIds,
             );
             return new SuccessResponse(true);
         } catch (error) {

@@ -209,17 +209,16 @@ export class UserMongoService {
     }
 
     // recently music
-    async updateRecentlyMusicId(userId: ObjectId, musicId: string) {
+    async updateRecentlyMusicId(userId: ObjectId, musicIds: string[]) {
         try {
             await this.userRepo.updateOne(
                 { _id: userId },
                 {
-                    $push: {
-                        recentlyMusicIds: {
-                            $each: [musicId],
-                            $position: 0,
-                            $slice: RECENTLY_MUSIC_LIMIT,
-                        },
+                    $set: {
+                        recentlyMusicIds: musicIds.slice(
+                            0,
+                            RECENTLY_MUSIC_LIMIT,
+                        ),
                     },
                 },
             );
@@ -231,9 +230,7 @@ export class UserMongoService {
 
     async updateFavoriteMusicId(userId: ObjectId, musicId: string) {
         try {
-            console.log('userId', userId);
-            console.log('favoriteIds', musicId);
-            const res = await this.userRepo.updateOne(
+            await this.userRepo.updateOne(
                 { _id: userId },
                 {
                     $addToSet: {
@@ -242,7 +239,6 @@ export class UserMongoService {
                 },
                 { new: true, upsert: true },
             );
-            console.log('res', res);
         } catch (error) {
             this.logger.error('Error in updateFavoriteMusicId service', error);
             throw error;
