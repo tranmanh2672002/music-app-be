@@ -1,6 +1,9 @@
 import { User } from './user.schema';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { MongoCollection } from 'src/common/constants';
+import {
+    DEFAULT_PLAYLIST_THUMBNAIL,
+    MongoCollection,
+} from 'src/common/constants';
 import { Document, Types, SchemaTypes } from 'mongoose';
 import { MongoBaseSchema } from './base.schema';
 import MongooseDelete from 'mongoose-delete';
@@ -37,6 +40,12 @@ export class Playlist extends MongoBaseSchema {
         default: [],
     })
     songIds: Types.ObjectId[];
+    @Prop({
+        required: false,
+        type: String,
+        default: DEFAULT_PLAYLIST_THUMBNAIL,
+    })
+    thumbnail: string;
 }
 
 export const PlaylistSchema = SchemaFactory.createForClass(Playlist);

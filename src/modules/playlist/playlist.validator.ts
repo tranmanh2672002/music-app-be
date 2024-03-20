@@ -5,6 +5,11 @@ export const playlistCreateSchema = Joi.object().keys({
     name: Joi.string().max(INPUT_TEXT_MAX_LENGTH).required(),
 });
 
+export const playlistUpdateSchema = Joi.object().keys({
+    name: Joi.string().max(INPUT_TEXT_MAX_LENGTH).optional(),
+    thumbnail: Joi.string().max(INPUT_TEXT_MAX_LENGTH).optional(),
+});
+
 export const playlistAddSongSchema = Joi.object().keys({
     youtubeId: Joi.string().max(INPUT_TEXT_MAX_LENGTH).required(),
 });

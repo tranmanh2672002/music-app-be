@@ -1,4 +1,4 @@
-import { HttpStatus } from '@/common/constants';
+import { DEFAULT_PLAYLIST_THUMBNAIL, HttpStatus } from '@/common/constants';
 import { ErrorResponse, SuccessResponse } from '@/common/helpers/response';
 import {
     Body,
@@ -7,6 +7,7 @@ import {
     Get,
     InternalServerErrorException,
     Param,
+    Patch,
     Post,
     Req,
     UseGuards,
@@ -15,11 +16,16 @@ import { JoiValidationPipe } from 'src/common/pipe/joi.validation.pipe';
 import { MusicService } from '../music/services/music.youtube.service';
 import { SongService } from '../song/services/song.service';
 import { AuthenticationGuard } from './../../common/guards/authentication.guard';
-import { IPlaylistAddSong, IPlaylistCreate } from './playlist.interface';
+import {
+    IPlaylistAddSong,
+    IPlaylistCreate,
+    IPlaylistUpdate,
+} from './playlist.interface';
 import {
     playlistAddSongSchema,
     playlistCreateSchema,
     playlistRemoveSongSchema,
+    playlistUpdateSchema,
 } from './playlist.validator';
 import { PlaylistService } from './services/playlist.service';
 
@@ -64,6 +70,7 @@ export class PlaylistController {
             const playlist = await this.playlistService.create(
                 req?.loginUser?._id,
                 body.name,
+                DEFAULT_PLAYLIST_THUMBNAIL,
             );
             return new SuccessResponse(playlist);
         } catch (error) {
@@ -150,6 +157,28 @@ export class PlaylistController {
                 song._id,
             );
             return new SuccessResponse(result);
+        } catch (error) {
+            return new InternalServerErrorException(error);
+        }
+    }
+
+    @Patch('/update/:id')
+    async update(
+        @Param('id') id: string,
+        @Body(new JoiValidationPipe(playlistUpdateSchema))
+        body: IPlaylistUpdate,
+    ) {
+        try {
+            const playlist = await this.playlistService.get(id);
+            if (!playlist) {
+                return new ErrorResponse(
+                    HttpStatus.NOT_FOUND,
+                    'Playlist not exists',
+                    [],
+                );
+            }
+            const data = await this.playlistService.update(id, body);
+            return new SuccessResponse(data);
         } catch (error) {
             return new InternalServerErrorException(error);
         }

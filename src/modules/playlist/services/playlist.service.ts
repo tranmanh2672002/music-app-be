@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { createWinstonLogger } from 'src/common/services/winston.service';
 import { MODULE_NAME } from '../playlist.constant';
 import { PlaylistRepo } from '@/repositories/playlist.repo';
+import { IPlaylistUpdate } from '../playlist.interface';
 
 @Injectable()
 export class PlaylistService {
@@ -47,12 +48,29 @@ export class PlaylistService {
         }
     }
 
-    async create(userId: string, name: string) {
+    async create(userId: string, name: string, thumbnail: string) {
         try {
-            const playlist = await this.playlistRepo.create({ userId, name });
+            const playlist = await this.playlistRepo.create({
+                userId,
+                name,
+                thumbnail,
+            });
             return playlist;
         } catch (error) {
             this.logger.error('Error create in playlist service', error);
+            throw error;
+        }
+    }
+
+    async update(id: string, data: IPlaylistUpdate) {
+        try {
+            const playlist = await this.playlistRepo.findByIdAndUpdate(
+                id,
+                data,
+            );
+            return playlist;
+        } catch (error) {
+            this.logger.error('Error update in playlist service', error);
             throw error;
         }
     }

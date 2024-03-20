@@ -126,3 +126,6 @@ export enum MongoCollection {
     PLAYLISTS = 'playlists',
     POSTS = 'posts',
 }
+
+export const DEFAULT_PLAYLIST_THUMBNAIL =
+    'https://photo-zmp3.zmdcdn.me/album_default.png';
