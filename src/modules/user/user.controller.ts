@@ -245,6 +245,78 @@ export class UserController {
         }
     }
 
+    @Delete('recently-music/:id')
+    async removeMusicRecently(@Param() params: { id: string }, @Req() req) {
+        try {
+            const user = await this.userService.getUserById(
+                userAttributes,
+                req?.loginUser?._id,
+            );
+            if (!user) {
+                return new ErrorResponse(
+                    HttpStatus.ITEM_NOT_FOUND,
+                    this.i18n.t('user.error.userNotFound'),
+                    [],
+                );
+            }
+            const recentlyMusicIds = user.recentlyMusicIds || [];
+            if (!recentlyMusicIds.includes(params.id)) {
+                return new ErrorResponse(
+                    HttpStatus.ITEM_NOT_FOUND,
+                    this.i18n.t('user.error.musicNotFound'),
+                    [],
+                );
+            } else {
+                const newRecentlyMusicIds = recentlyMusicIds.filter(
+                    (item) => item !== params.id,
+                );
+                await this.userService.updateRecentlyMusicId(
+                    req?.loginUser?._id,
+                    newRecentlyMusicIds,
+                );
+                return new SuccessResponse(true);
+            }
+        } catch (error) {
+            return new InternalServerErrorException(error);
+        }
+    }
+
+    @Delete('favorite-music/:id')
+    async removeMusicFavorite(@Param() params: { id: string }, @Req() req) {
+        try {
+            const user = await this.userService.getUserById(
+                userAttributes,
+                req?.loginUser?._id,
+            );
+            if (!user) {
+                return new ErrorResponse(
+                    HttpStatus.ITEM_NOT_FOUND,
+                    this.i18n.t('user.error.userNotFound'),
+                    [],
+                );
+            }
+            const favoriteMusicIds = user.favoriteIds || [];
+            if (!favoriteMusicIds.includes(params.id)) {
+                return new ErrorResponse(
+                    HttpStatus.ITEM_NOT_FOUND,
+                    this.i18n.t('user.error.musicNotFound'),
+                    [],
+                );
+            } else {
+                const newFavoriteMusicIds = favoriteMusicIds.filter(
+                    (item) => item !== params.id,
+                );
+                await this.userService.setFavoriteMusicId(
+                    req?.loginUser?._id,
+                    newFavoriteMusicIds,
+                );
+                return new SuccessResponse(true);
+            }
+        } catch (error) {
+            return new InternalServerErrorException(error);
+        }
+    }
+
     @Delete(':id')
     async deleteUser(
         @Param(new JoiValidationPipe(mongoIdSchema)) params: { id: ObjectId },

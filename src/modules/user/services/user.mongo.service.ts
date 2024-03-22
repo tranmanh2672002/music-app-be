@@ -245,6 +245,22 @@ export class UserMongoService {
         }
     }
 
+    async setFavoriteMusicId(userId: ObjectId, musicIds: string[]) {
+        try {
+            await this.userRepo.updateOne(
+                { _id: userId },
+                {
+                    $set: {
+                        favoriteIds: musicIds,
+                    },
+                },
+            );
+        } catch (error) {
+            this.logger.error('Error in setRecentlyMusicIds service', error);
+            throw error;
+        }
+    }
+
     async getRecentlyMusic(ids: string[]) {
         const data = await Promise.all(
             ids.map((id) => {
