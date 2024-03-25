@@ -35,5 +35,6 @@ export interface IMusicYoutubeSongDetail {
         width: number;
         height: number;
     }[];
+    duration: number;
     viewCount: number;
 }

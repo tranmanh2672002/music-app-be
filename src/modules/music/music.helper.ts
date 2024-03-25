@@ -33,5 +33,6 @@ export const convertToMusicYoutubeSongDetail = (
         },
         thumbnails: data?.thumbnails,
         viewCount: data?.viewCount,
+        duration: data?.lengthSeconds,
     };
 };
