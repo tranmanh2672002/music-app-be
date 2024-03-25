@@ -35,11 +35,11 @@ export class Playlist extends MongoBaseSchema {
     userId: Types.ObjectId;
     @Prop({
         required: true,
-        type: [SchemaTypes.ObjectId],
+        type: [String],
         ref: Song.name,
         default: [],
     })
-    songIds: Types.ObjectId[];
+    songIds: string[];
     @Prop({
         required: false,
         type: String,

@@ -15,7 +15,6 @@ import { CommonModule } from './modules/common/common.module';
 import { MusicModule } from './modules/music/music.module';
 import { EventsModule } from './modules/socket/socket.module';
 import { PlaylistModule } from './modules/playlist/playlist.module';
-import { SongModule } from './modules/song/song.module';
 import { PostModule } from './modules/post/post.module';
 import { CacheModule } from '@nestjs/cache-manager';
 @Module({
@@ -37,7 +36,6 @@ import { CacheModule } from '@nestjs/cache-manager';
         UserModule,
         MusicModule,
         PlaylistModule,
-        SongModule,
         PostModule,
         EventsModule,
     ],

@@ -11,10 +11,10 @@ import {
     Post,
     Req,
     UseGuards,
+    UseInterceptors,
 } from '@nestjs/common';
 import { JoiValidationPipe } from 'src/common/pipe/joi.validation.pipe';
 import { MusicService } from '../music/services/music.youtube.service';
-import { SongService } from '../song/services/song.service';
 import { AuthenticationGuard } from './../../common/guards/authentication.guard';
 import {
     IPlaylistAddSong,
@@ -28,13 +28,13 @@ import {
     playlistUpdateSchema,
 } from './playlist.validator';
 import { PlaylistService } from './services/playlist.service';
+import { CacheInterceptor } from '@nestjs/cache-manager';
 
 @UseGuards(AuthenticationGuard)
 @Controller('playlist')
 export class PlaylistController {
     constructor(
         private readonly playlistService: PlaylistService,
-        private readonly songService: SongService,
         private readonly musicService: MusicService,
     ) {}
 
@@ -50,9 +50,18 @@ export class PlaylistController {
         }
     }
 
+    @UseInterceptors(CacheInterceptor)
     @Get('/get/:id/detail')
     async getDetail(@Param('id') id) {
         try {
+            const isExisted = await this.playlistService.get(id);
+            if (!isExisted) {
+                return new ErrorResponse(
+                    HttpStatus.NOT_FOUND,
+                    'Playlist not exists',
+                    [],
+                );
+            }
             const playlist = await this.playlistService.getDetail(id);
             return new SuccessResponse(playlist);
         } catch (error) {
@@ -93,34 +102,18 @@ export class PlaylistController {
                     [],
                 );
             }
-            // check song in database has youtubeId
-            const song = await this.songService.getByYoutubeId(body?.youtubeId);
-            if (!song) {
-                const data = await this.musicService.getDetail(body.youtubeId);
-                if (data) {
-                    const newSong = await this.songService.create({
-                        name: data?.title,
-                        artist: data?.artist?.name,
-                        youtubeId: body?.youtubeId,
-                        thumbnails: data?.thumbnails,
-                    });
-                    const result =
-                        await this.playlistService.addSongIdToPlaylist(
-                            playlistId,
-                            newSong._id,
-                        );
-                    return new SuccessResponse(result);
-                } else {
-                    return new ErrorResponse(
-                        HttpStatus.NOT_FOUND,
-                        'Music not exists',
-                        [],
-                    );
-                }
+            // check youtubeId existed
+            const data = await this.musicService.getDetail(body.youtubeId);
+            if (!data) {
+                return new ErrorResponse(
+                    HttpStatus.NOT_FOUND,
+                    'Music not exists',
+                    [],
+                );
             }
             const result = await this.playlistService.addSongIdToPlaylist(
                 playlistId,
-                song._id,
+                body.youtubeId,
             );
             return new SuccessResponse(result);
         } catch (error) {
@@ -143,18 +136,9 @@ export class PlaylistController {
                     [],
                 );
             }
-            // check song in database has youtubeId
-            const song = await this.songService.getById(body?.id);
-            if (!song) {
-                return new ErrorResponse(
-                    HttpStatus.NOT_FOUND,
-                    'Song not exists',
-                    [],
-                );
-            }
             const result = await this.playlistService.removeSongIdToPlaylist(
                 playlistId,
-                song._id,
+                body.id,
             );
             return new SuccessResponse(result);
         } catch (error) {

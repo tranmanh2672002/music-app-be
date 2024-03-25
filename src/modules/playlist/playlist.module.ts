@@ -6,10 +6,8 @@ import { JwtService } from '@nestjs/jwt';
 import { PlaylistRepo } from '@/repositories/playlist.repo';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Playlist, PlaylistSchema } from '@/mongo-schemas/playlist.schema';
-import { SongRepo } from '@/repositories/song.repo';
 import { Song, SongSchema } from '@/mongo-schemas/song.schema';
 import { MusicClient } from 'youtubei';
-import { SongService } from '../song/services/song.service';
 
 @Module({
     imports: [
@@ -23,10 +21,8 @@ import { SongService } from '../song/services/song.service';
         PlaylistService,
         JwtService,
         PlaylistRepo,
-        SongRepo,
         MusicService,
         MusicClient,
-        SongService,
     ],
     exports: [PlaylistService],
 })

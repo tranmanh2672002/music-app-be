@@ -4,12 +4,14 @@ import { createWinstonLogger } from 'src/common/services/winston.service';
 import { MODULE_NAME } from '../playlist.constant';
 import { PlaylistRepo } from '@/repositories/playlist.repo';
 import { IPlaylistUpdate } from '../playlist.interface';
+import { MusicService } from '@/modules/music/services/music.youtube.service';
 
 @Injectable()
 export class PlaylistService {
     constructor(
         private readonly configService: ConfigService,
         private readonly playlistRepo: PlaylistRepo,
+        private readonly musicService: MusicService,
     ) {}
     private readonly logger = createWinstonLogger(
         MODULE_NAME,
@@ -28,14 +30,16 @@ export class PlaylistService {
 
     async getDetail(id: string) {
         try {
-            const playlist = await this.playlistRepo
-                .findById(id)
-                .populate('songIds')
-                .lean();
+            const playlist = await this.playlistRepo.findById(id).lean();
             const { songIds, ...data } = playlist;
+            const songs = await Promise.all(
+                songIds.map((id) => {
+                    return this.musicService.getDetail(id);
+                }),
+            );
             return {
                 ...data,
-                songs: songIds,
+                songs,
             };
         } catch (error) {
             this.logger.error('Error get in playlist service', error);
