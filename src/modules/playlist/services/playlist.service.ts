@@ -30,8 +30,13 @@ export class PlaylistService {
         try {
             const playlist = await this.playlistRepo
                 .findById(id)
-                .populate('songIds');
-            return playlist;
+                .populate('songIds')
+                .lean();
+            const { songIds, ...data } = playlist;
+            return {
+                ...data,
+                songs: songIds,
+            };
         } catch (error) {
             this.logger.error('Error get in playlist service', error);
             throw error;
