@@ -7,7 +7,7 @@ export const playlistCreateSchema = Joi.object().keys({
 
 export const playlistUpdateSchema = Joi.object().keys({
     name: Joi.string().max(INPUT_TEXT_MAX_LENGTH).optional(),
-    thumbnail: Joi.string().max(INPUT_TEXT_MAX_LENGTH).optional(),
+    thumbnail: Joi.string().optional(),
 });
 
 export const playlistAddSongSchema = Joi.object().keys({
