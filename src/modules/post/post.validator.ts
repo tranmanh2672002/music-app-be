@@ -7,7 +7,7 @@ import { musicIdSchema } from '../common/common.validate';
 export const postCreateSchema = Joi.object().keys({
     description: Joi.string().max(INPUT_TEXT_MAX_LENGTH).optional(),
     type: Joi.valid(...Object.values(POST_TYPE)).required(),
-    musicId: musicIdSchema.required(),
+    musicId: musicIdSchema.optional(),
     playlistId: Joi.string().max(INPUT_TEXT_MAX_LENGTH).optional(),
 });
 

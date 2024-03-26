@@ -6,8 +6,8 @@ import { MODULE_NAME } from '../post.constant';
 import { PostRepo } from '@/repositories/post.repo';
 import { IPostCreate } from '../post.interface';
 import { MusicService } from '@/modules/music/services/music.youtube.service';
-import { OrderDirection } from '@/common/constants';
-import { FilterQuery, PipelineStage } from 'mongoose';
+import { MongoCollection, OrderDirection } from '@/common/constants';
+import { FilterQuery, PipelineStage, Types } from 'mongoose';
 import { Post } from '@/mongo-schemas/post.schema';
 import { get } from 'lodash';
 
@@ -54,6 +54,36 @@ export class PostService {
             const query: PipelineStage[] = [
                 { $match: filter },
                 {
+                    $lookup: {
+                        from: MongoCollection.USERS,
+                        localField: 'userId',
+                        foreignField: '_id',
+                        as: 'user',
+                        pipeline: [
+                            {
+                                $project: {
+                                    _id: 1,
+                                    email: 1,
+                                    provider: 1,
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $project: {
+                        _id: 1,
+                        description: 1,
+                        type: 1,
+                        song: 1,
+                        playlistId: 1,
+                        user: { $arrayElemAt: ['$user', 0] },
+                        userLikes: 1,
+                        createdAt: 1,
+                        updatedAt: 1,
+                    },
+                },
+                {
                     $facet: {
                         data: [
                             {
@@ -83,7 +113,71 @@ export class PostService {
 
     async getById(id: string) {
         try {
-            const post = await this.postRepo.findOne({ _id: id });
+            const post = await this.postRepo.aggregate([
+                {
+                    $match: {
+                        _id: new Types.ObjectId(id),
+                    },
+                },
+                {
+                    $lookup: {
+                        from: MongoCollection.USERS,
+                        localField: 'userId',
+                        foreignField: '_id',
+                        as: 'user',
+                        pipeline: [
+                            {
+                                $project: {
+                                    _id: 1,
+                                    email: 1,
+                                    provider: 1,
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $lookup: {
+                        from: MongoCollection.PLAYLISTS,
+                        localField: 'playlistId',
+                        foreignField: '_id',
+                        as: 'playlist',
+                        pipeline: [
+                            {
+                                $project: {
+                                    _id: 1,
+                                    name: 1,
+                                    songIds: 1,
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $unwind: { path: '$playlist' },
+                },
+                {
+                    $lookup: {
+                        from: MongoCollection.SONGS,
+                        localField: 'playlist.songIds',
+                        foreignField: '_id',
+                        as: 'playlist.songs',
+                    },
+                },
+                {
+                    $project: {
+                        _id: 1,
+                        description: 1,
+                        type: 1,
+                        song: 1,
+                        playlist: 1,
+                        user: { $arrayElemAt: ['$user', 0] },
+                        userLikes: 1,
+                        createdAt: 1,
+                        updatedAt: 1,
+                    },
+                },
+            ]);
             return post;
         } catch (error) {
             this.logger.error('Error getById in post service', error);
@@ -93,7 +187,43 @@ export class PostService {
 
     async getByUserId(id: string) {
         try {
-            const post = await this.postRepo.find({ userId: id });
+            const post = await this.postRepo.aggregate([
+                {
+                    $match: {
+                        userId: new Types.ObjectId(id),
+                    },
+                },
+                {
+                    $lookup: {
+                        from: MongoCollection.USERS,
+                        localField: 'userId',
+                        foreignField: '_id',
+                        as: 'user',
+                        pipeline: [
+                            {
+                                $project: {
+                                    _id: 1,
+                                    email: 1,
+                                    provider: 1,
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    $project: {
+                        _id: 1,
+                        description: 1,
+                        type: 1,
+                        song: 1,
+                        playlistId: 1,
+                        user: { $arrayElemAt: ['$user', 0] },
+                        userLikes: 1,
+                        createdAt: 1,
+                        updatedAt: 1,
+                    },
+                },
+            ]);
             return post;
         } catch (error) {
             this.logger.error('Error getById in post service', error);
