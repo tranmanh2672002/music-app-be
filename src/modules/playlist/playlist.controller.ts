@@ -11,10 +11,10 @@ import {
     Post,
     Req,
     UseGuards,
+    UseInterceptors,
 } from '@nestjs/common';
 import { JoiValidationPipe } from 'src/common/pipe/joi.validation.pipe';
 import { MusicService } from '../music/services/music.youtube.service';
-import { SongService } from '../song/services/song.service';
 import { AuthenticationGuard } from './../../common/guards/authentication.guard';
 import {
     IPlaylistAddSong,
@@ -28,14 +28,16 @@ import {
     playlistUpdateSchema,
 } from './playlist.validator';
 import { PlaylistService } from './services/playlist.service';
+import { CacheInterceptor } from '@nestjs/cache-manager';
+import { SongService } from '../song/services/song.service';
 
 @UseGuards(AuthenticationGuard)
 @Controller('playlist')
 export class PlaylistController {
     constructor(
         private readonly playlistService: PlaylistService,
-        private readonly songService: SongService,
         private readonly musicService: MusicService,
+        private readonly songService: SongService,
     ) {}
 
     @Get('/get-list')
@@ -50,6 +52,7 @@ export class PlaylistController {
         }
     }
 
+    @UseInterceptors(CacheInterceptor)
     @Get('/get/:id/detail')
     async getDetail(@Param('id') id) {
         try {
@@ -129,7 +132,7 @@ export class PlaylistController {
             }
             const result = await this.playlistService.addSongIdToPlaylist(
                 playlistId,
-                song._id,
+                body.youtubeId,
             );
             return new SuccessResponse(result);
         } catch (error) {
@@ -152,18 +155,9 @@ export class PlaylistController {
                     [],
                 );
             }
-            // check song in database has youtubeId
-            const song = await this.songService.getById(body?.id);
-            if (!song) {
-                return new ErrorResponse(
-                    HttpStatus.NOT_FOUND,
-                    'Song not exists',
-                    [],
-                );
-            }
             const result = await this.playlistService.removeSongIdToPlaylist(
                 playlistId,
-                song._id,
+                body.id,
             );
             return new SuccessResponse(result);
         } catch (error) {
