@@ -105,6 +105,7 @@ export class PlaylistController {
                 );
             }
             // check song in database has youtubeId
+            let songId;
             const song = await this.songService.getByYoutubeId(body?.youtubeId);
             if (!song) {
                 const data = await this.musicService.getDetail(body.youtubeId);
@@ -116,12 +117,7 @@ export class PlaylistController {
                         thumbnails: data?.thumbnails,
                         duration: data?.duration,
                     });
-                    const result =
-                        await this.playlistService.addSongIdToPlaylist(
-                            playlistId,
-                            newSong._id,
-                        );
-                    return new SuccessResponse(result);
+                    songId = newSong._id;
                 } else {
                     return new ErrorResponse(
                         HttpStatus.NOT_FOUND,
@@ -129,10 +125,12 @@ export class PlaylistController {
                         [],
                     );
                 }
+            } else {
+                songId = song._id;
             }
             const result = await this.playlistService.addSongIdToPlaylist(
                 playlistId,
-                body.youtubeId,
+                songId,
             );
             return new SuccessResponse(result);
         } catch (error) {

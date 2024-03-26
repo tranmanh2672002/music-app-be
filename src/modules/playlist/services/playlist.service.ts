@@ -30,16 +30,15 @@ export class PlaylistService {
 
     async getDetail(id: string) {
         try {
-            const playlist = await this.playlistRepo.findById(id).lean();
+            const playlist = await this.playlistRepo
+                .findById(id)
+                .populate('songIds')
+                .lean();
             const { songIds, ...data } = playlist;
-            const songs = await Promise.all(
-                songIds.map((id) => {
-                    return this.musicService.getDetail(id);
-                }),
-            );
+
             return {
                 ...data,
-                songs,
+                songs: songIds,
             };
         } catch (error) {
             this.logger.error('Error get in playlist service', error);
