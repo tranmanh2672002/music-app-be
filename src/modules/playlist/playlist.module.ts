@@ -8,6 +8,8 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { Playlist, PlaylistSchema } from '@/mongo-schemas/playlist.schema';
 import { Song, SongSchema } from '@/mongo-schemas/song.schema';
 import { MusicClient } from 'youtubei';
+import { SongService } from '../song/services/song.service';
+import { SongRepo } from '@/repositories/song.repo';
 
 @Module({
     imports: [
@@ -23,6 +25,8 @@ import { MusicClient } from 'youtubei';
         PlaylistRepo,
         MusicService,
         MusicClient,
+        SongService,
+        SongRepo,
     ],
     exports: [PlaylistService],
 })
