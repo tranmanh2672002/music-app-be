@@ -25,6 +25,7 @@ import {
     IUserUpdateBody,
 } from '../user.interface';
 import { UserRepo } from '@/repositories/user.repo';
+import { SongRepo } from '@/repositories/song.repo';
 
 @Injectable()
 export class UserMongoService {
@@ -33,6 +34,7 @@ export class UserMongoService {
         @InjectModel(User.name)
         private readonly userModel: Model<UserDocument>,
         private readonly userRepo: UserRepo,
+        private readonly songRepo: SongRepo,
     ) {}
     private readonly logger = createWinstonLogger(
         MODULE_NAME,
@@ -265,7 +267,14 @@ export class UserMongoService {
                 .findById(id)
                 .populate('recentlyMusicIds')
                 .lean();
-            return user?.recentlyMusicIds || [];
+            return (
+                user?.recentlyMusicIds?.map((music) => ({
+                    ...music,
+                    isFavorite: user?.favoriteMusicIds.some((id) =>
+                        id.equals(music._id),
+                    ),
+                })) || []
+            );
         } catch (error) {
             this.logger.error(
                 'Error getRecentlyMusic in playlist service',
@@ -286,6 +295,27 @@ export class UserMongoService {
         } catch (error) {
             this.logger.error(
                 'Error getFavoriteMusic in playlist service',
+                error,
+            );
+            throw error;
+        }
+    }
+
+    // check
+    async checkMusicIdInFavorite(userId: string, id: string) {
+        try {
+            const song = await this.songRepo.findOne({ youtubeId: id });
+            if (song) {
+                const user = await this.userRepo.findOne({
+                    _id: userId,
+                    favoriteMusicIds: { $in: [song._id] },
+                });
+                return user ? true : false;
+            }
+            return false;
+        } catch (error) {
+            this.logger.error(
+                'Error checkMusicIdInFavorite in playlist service',
                 error,
             );
             throw error;

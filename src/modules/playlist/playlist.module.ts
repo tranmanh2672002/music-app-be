@@ -10,12 +10,15 @@ import { Song, SongSchema } from '@/mongo-schemas/song.schema';
 import { MusicClient } from 'youtubei';
 import { SongService } from '../song/services/song.service';
 import { SongRepo } from '@/repositories/song.repo';
+import { UserRepo } from '@/repositories/user.repo';
+import { User, UserSchema } from '@/mongo-schemas/user.schema';
 
 @Module({
     imports: [
         MongooseModule.forFeature([
             { name: Playlist.name, schema: PlaylistSchema },
             { name: Song.name, schema: SongSchema },
+            { name: User.name, schema: UserSchema },
         ]),
     ],
     controllers: [PlaylistController],
@@ -27,6 +30,7 @@ import { SongRepo } from '@/repositories/song.repo';
         MusicClient,
         SongService,
         SongRepo,
+        UserRepo,
     ],
     exports: [PlaylistService],
 })

@@ -111,6 +111,19 @@ export class UserController {
         }
     }
 
+    @Get('favorite-music/check/:id')
+    async checkMusicIdInFavorite(@Req() req, @Param() params: { id: string }) {
+        try {
+            const check = await this.userService.checkMusicIdInFavorite(
+                req?.loginUser?._id,
+                params.id,
+            );
+            return new SuccessResponse(check);
+        } catch (error) {
+            return new InternalServerErrorException(error);
+        }
+    }
+
     @Get(':id')
     async getUserDetail(
         @Param(new JoiValidationPipe(mongoIdSchema)) params: { id: ObjectId },
