@@ -1,8 +1,9 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { INPUT_TEXT_MAX_LENGTH, MongoCollection } from 'src/common/constants';
-import { Document } from 'mongoose';
+import { Document, SchemaTypes, Types } from 'mongoose';
 import { MongoBaseSchema } from './base.schema';
 import MongooseDelete from 'mongoose-delete';
+import { Song } from './song.schema';
 
 export type UserDocument = User & Document;
 
@@ -36,16 +37,18 @@ export class User extends MongoBaseSchema {
     password: string;
     @Prop({
         required: false,
-        type: [String],
+        type: [SchemaTypes.ObjectId],
+        ref: Song.name,
         default: [],
     })
-    recentlyMusicIds: string[];
+    recentlyMusicIds: Types.ObjectId[];
     @Prop({
         required: false,
-        type: [String],
+        type: [SchemaTypes.ObjectId],
+        ref: Song.name,
         default: [],
     })
-    favoriteIds: string[];
+    favoriteMusicIds: Types.ObjectId[];
 }
 export const UserSchema = SchemaFactory.createForClass(User);
 

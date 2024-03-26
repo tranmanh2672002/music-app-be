@@ -7,10 +7,16 @@ import { UserController } from './user.controller';
 import { UserRepo } from '@/repositories/user.repo';
 import { MusicService } from '../music/services/music.youtube.service';
 import { MusicClient } from 'youtubei';
+import { SongService } from '../song/services/song.service';
+import { SongRepo } from '@/repositories/song.repo';
+import { Song, SongSchema } from '@/mongo-schemas/song.schema';
 
 @Module({
     imports: [
-        MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+        MongooseModule.forFeature([
+            { name: User.name, schema: UserSchema },
+            { name: Song.name, schema: SongSchema },
+        ]),
     ],
     controllers: [UserController],
     providers: [
@@ -19,6 +25,8 @@ import { MusicClient } from 'youtubei';
         UserRepo,
         MusicService,
         MusicClient,
+        SongService,
+        SongRepo,
     ],
     exports: [UserMongoService],
 })

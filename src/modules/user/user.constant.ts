@@ -5,7 +5,7 @@ export const userAttributes = [
     'email',
     'provider',
     'recentlyMusicIds',
-    'favoriteIds',
+    'favoriteMusicIds',
 ];
 
 export enum UserOrderBy {

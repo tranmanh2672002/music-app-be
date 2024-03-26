@@ -1,22 +1,21 @@
-import { AuthenticationGuard } from './../../common/guards/authentication.guard';
-import { ISongCreate } from './song.interface';
+import { HttpStatus } from '@/common/constants';
+import { ErrorResponse, SuccessResponse } from '@/common/helpers/response';
 import {
-    Controller,
-    Get,
-    Post,
-    InternalServerErrorException,
-    Query,
     Body,
+    Controller,
+    Delete,
+    Get,
+    InternalServerErrorException,
+    Param,
+    Post,
     Req,
     UseGuards,
-    Delete,
-    Param,
 } from '@nestjs/common';
 import { JoiValidationPipe } from 'src/common/pipe/joi.validation.pipe';
-import { songCreateSchema } from './song.validator';
+import { AuthenticationGuard } from './../../common/guards/authentication.guard';
 import { SongService } from './services/song.service';
-import { ErrorResponse, SuccessResponse } from '@/common/helpers/response';
-import { HttpStatus } from '@/common/constants';
+import { ISongCreate } from './song.interface';
+import { songCreateSchema } from './song.validator';
 
 @UseGuards(AuthenticationGuard)
 @Controller('song')

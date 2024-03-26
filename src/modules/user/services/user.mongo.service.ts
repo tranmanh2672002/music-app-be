@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, ObjectId } from 'mongoose';
+import { Model, ObjectId, Types } from 'mongoose';
 import {
     DEFAULT_FIRST_PAGE,
     DEFAULT_LIMIT_FOR_PAGINATION,
@@ -25,7 +25,6 @@ import {
     IUserUpdateBody,
 } from '../user.interface';
 import { UserRepo } from '@/repositories/user.repo';
-import { MusicService } from '@/modules/music/services/music.youtube.service';
 
 @Injectable()
 export class UserMongoService {
@@ -34,7 +33,6 @@ export class UserMongoService {
         @InjectModel(User.name)
         private readonly userModel: Model<UserDocument>,
         private readonly userRepo: UserRepo,
-        private readonly musicService: MusicService,
     ) {}
     private readonly logger = createWinstonLogger(
         MODULE_NAME,
@@ -209,7 +207,7 @@ export class UserMongoService {
     }
 
     // recently music
-    async updateRecentlyMusicId(userId: ObjectId, musicIds: string[]) {
+    async updateRecentlyMusicId(userId: ObjectId, musicIds: Types.ObjectId[]) {
         try {
             await this.userRepo.updateOne(
                 { _id: userId },
@@ -228,13 +226,13 @@ export class UserMongoService {
         }
     }
 
-    async updateFavoriteMusicId(userId: ObjectId, musicId: string) {
+    async updateFavoriteMusicId(userId: ObjectId, musicId: Types.ObjectId) {
         try {
             await this.userRepo.updateOne(
                 { _id: userId },
                 {
                     $addToSet: {
-                        favoriteIds: musicId,
+                        favoriteMusicIds: musicId,
                     },
                 },
                 { new: true, upsert: true },
@@ -245,13 +243,13 @@ export class UserMongoService {
         }
     }
 
-    async setFavoriteMusicId(userId: ObjectId, musicIds: string[]) {
+    async setFavoriteMusicId(userId: ObjectId, musicIds: Types.ObjectId[]) {
         try {
             await this.userRepo.updateOne(
                 { _id: userId },
                 {
                     $set: {
-                        favoriteIds: musicIds,
+                        favoriteMusicIds: musicIds,
                     },
                 },
             );
@@ -261,22 +259,36 @@ export class UserMongoService {
         }
     }
 
-    async getRecentlyMusic(ids: string[]) {
-        const data = await Promise.all(
-            ids.map((id) => {
-                return this.musicService.getDetail(id);
-            }),
-        );
-        return data;
+    async getRecentlyMusic(id: string) {
+        try {
+            const user = await this.userRepo
+                .findById(id)
+                .populate('recentlyMusicIds')
+                .lean();
+            return user?.recentlyMusicIds || [];
+        } catch (error) {
+            this.logger.error(
+                'Error getRecentlyMusic in playlist service',
+                error,
+            );
+            throw error;
+        }
     }
 
     // favorite
-    async getFavoriteMusic(ids: string[]) {
-        const data = await Promise.all(
-            ids.map((id) => {
-                return this.musicService.getDetail(id);
-            }),
-        );
-        return data;
+    async getFavoriteMusic(id: string) {
+        try {
+            const user = await this.userRepo
+                .findById(id)
+                .populate('favoriteMusicIds')
+                .lean();
+            return user?.favoriteMusicIds || [];
+        } catch (error) {
+            this.logger.error(
+                'Error getFavoriteMusic in playlist service',
+                error,
+            );
+            throw error;
+        }
     }
 }

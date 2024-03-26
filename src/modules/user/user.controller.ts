@@ -13,7 +13,7 @@ import {
     UseGuards,
     UseInterceptors,
 } from '@nestjs/common';
-import { ObjectId } from 'mongoose';
+import { ObjectId, Types } from 'mongoose';
 import { I18nService } from 'nestjs-i18n';
 import { ErrorResponse, SuccessResponse } from 'src/common/helpers/response';
 import { JoiValidationPipe } from 'src/common/pipe/joi.validation.pipe';
@@ -33,6 +33,8 @@ import {
     userRecentlyMusicUpdateSchema,
 } from './user.validator';
 import { CacheInterceptor } from '@nestjs/cache-manager';
+import { SongService } from '../song/services/song.service';
+import { MusicService } from '../music/services/music.youtube.service';
 
 @UseGuards(AuthenticationGuard)
 @Controller('user')
@@ -40,6 +42,8 @@ export class UserController {
     constructor(
         private readonly i18n: I18nService,
         private readonly userService: UserMongoService,
+        private readonly musicService: MusicService,
+        private readonly songService: SongService,
     ) {
         //
     }
@@ -74,7 +78,7 @@ export class UserController {
                 );
             }
             const data = await this.userService.getRecentlyMusic(
-                user?.recentlyMusicIds || [],
+                req?.loginUser?._id,
             );
             return new SuccessResponse(data);
         } catch (error) {
@@ -99,7 +103,7 @@ export class UserController {
                 );
             }
             const data = await this.userService.getFavoriteMusic(
-                user?.favoriteIds || [],
+                req?.loginUser?._id,
             );
             return new SuccessResponse(data);
         } catch (error) {
@@ -172,9 +176,36 @@ export class UserController {
                     [],
                 );
             }
+
+            // check song in database has youtubeId
+            let songId;
+            const song = await this.songService.getByYoutubeId(body?.id);
+            if (!song) {
+                const data = await this.musicService.getDetail(body.id);
+                if (data) {
+                    const newSong = await this.songService.create({
+                        name: data?.title,
+                        artist: data?.artist?.name,
+                        youtubeId: body?.id,
+                        thumbnails: data?.thumbnails,
+                        duration: data?.duration,
+                    });
+                    songId = newSong._id;
+                } else {
+                    return new ErrorResponse(
+                        HttpStatus.NOT_FOUND,
+                        'Music not exists',
+                        [],
+                    );
+                }
+            } else {
+                songId = song._id;
+            }
+
             const newRecentlyMusicIds =
-                user.recentlyMusicIds?.filter((item) => item !== body.id) || [];
-            newRecentlyMusicIds.unshift(body.id);
+                user.recentlyMusicIds?.filter((item) => !item.equals(songId)) ||
+                [];
+            newRecentlyMusicIds.unshift(songId);
             await this.userService.updateRecentlyMusicId(
                 req?.loginUser?._id,
                 newRecentlyMusicIds,
@@ -205,9 +236,34 @@ export class UserController {
                 );
             }
 
+            // check song in database has youtubeId
+            let songId;
+            const song = await this.songService.getByYoutubeId(body?.id);
+            if (!song) {
+                const data = await this.musicService.getDetail(body.id);
+                if (data) {
+                    const newSong = await this.songService.create({
+                        name: data?.title,
+                        artist: data?.artist?.name,
+                        youtubeId: body?.id,
+                        thumbnails: data?.thumbnails,
+                        duration: data?.duration,
+                    });
+                    songId = newSong._id;
+                } else {
+                    return new ErrorResponse(
+                        HttpStatus.NOT_FOUND,
+                        'Music not exists',
+                        [],
+                    );
+                }
+            } else {
+                songId = song._id;
+            }
+
             await this.userService.updateFavoriteMusicId(
                 req?.loginUser?._id,
-                body.id,
+                songId,
             );
             return new SuccessResponse(true);
         } catch (error) {
@@ -246,7 +302,10 @@ export class UserController {
     }
 
     @Delete('recently-music/:id')
-    async removeMusicRecently(@Param() params: { id: string }, @Req() req) {
+    async removeMusicRecently(
+        @Param() params: { id: Types.ObjectId },
+        @Req() req,
+    ) {
         try {
             const user = await this.userService.getUserById(
                 userAttributes,
@@ -260,7 +319,7 @@ export class UserController {
                 );
             }
             const recentlyMusicIds = user.recentlyMusicIds || [];
-            if (!recentlyMusicIds.includes(params.id)) {
+            if (!recentlyMusicIds.some((item) => item.equals(params.id))) {
                 return new ErrorResponse(
                     HttpStatus.ITEM_NOT_FOUND,
                     this.i18n.t('user.error.musicNotFound'),
@@ -268,7 +327,7 @@ export class UserController {
                 );
             } else {
                 const newRecentlyMusicIds = recentlyMusicIds.filter(
-                    (item) => item !== params.id,
+                    (item) => !item.equals(params.id),
                 );
                 await this.userService.updateRecentlyMusicId(
                     req?.loginUser?._id,
@@ -282,7 +341,10 @@ export class UserController {
     }
 
     @Delete('favorite-music/:id')
-    async removeMusicFavorite(@Param() params: { id: string }, @Req() req) {
+    async removeMusicFavorite(
+        @Param() params: { id: Types.ObjectId },
+        @Req() req,
+    ) {
         try {
             const user = await this.userService.getUserById(
                 userAttributes,
@@ -295,8 +357,8 @@ export class UserController {
                     [],
                 );
             }
-            const favoriteMusicIds = user.favoriteIds || [];
-            if (!favoriteMusicIds.includes(params.id)) {
+            const favoriteMusicIds = user.favoriteMusicIds || [];
+            if (!favoriteMusicIds.some((item) => item.equals(params.id))) {
                 return new ErrorResponse(
                     HttpStatus.ITEM_NOT_FOUND,
                     this.i18n.t('user.error.musicNotFound'),
@@ -304,7 +366,7 @@ export class UserController {
                 );
             } else {
                 const newFavoriteMusicIds = favoriteMusicIds.filter(
-                    (item) => item !== params.id,
+                    (item) => !item.equals(params.id),
                 );
                 await this.userService.setFavoriteMusicId(
                     req?.loginUser?._id,

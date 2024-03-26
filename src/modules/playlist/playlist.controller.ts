@@ -53,6 +53,14 @@ export class PlaylistController {
     @Get('/get/:id/detail')
     async getDetail(@Param('id') id) {
         try {
+            const isExisted = await this.playlistService.get(id);
+            if (!isExisted) {
+                return new ErrorResponse(
+                    HttpStatus.NOT_FOUND,
+                    'Playlist not exists',
+                    [],
+                );
+            }
             const playlist = await this.playlistService.getDetail(id);
             return new SuccessResponse(playlist);
         } catch (error) {
@@ -103,6 +111,7 @@ export class PlaylistController {
                         artist: data?.artist?.name,
                         youtubeId: body?.youtubeId,
                         thumbnails: data?.thumbnails,
+                        duration: data?.duration,
                     });
                     const result =
                         await this.playlistService.addSongIdToPlaylist(

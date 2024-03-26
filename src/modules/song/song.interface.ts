@@ -10,4 +10,5 @@ export interface ISongCreate {
     youtubeId: string;
     artist: string;
     thumbnails: IThumbnail[];
+    duration: number;
 }

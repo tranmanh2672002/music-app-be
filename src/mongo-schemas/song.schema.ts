@@ -64,6 +64,12 @@ export class Song extends MongoBaseSchema {
         type: String,
     })
     artist: string;
+
+    @Prop({
+        required: true,
+        type: Number,
+    })
+    duration: number;
 }
 export const SongSchema = SchemaFactory.createForClass(Song);
 
