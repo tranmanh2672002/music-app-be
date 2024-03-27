@@ -144,24 +144,21 @@ export class PostService {
                         as: 'playlist',
                         pipeline: [
                             {
+                                $lookup: {
+                                    from: MongoCollection.SONGS,
+                                    localField: 'songIds',
+                                    foreignField: '_id',
+                                    as: 'songs',
+                                },
+                            },
+                            {
                                 $project: {
                                     _id: 1,
                                     name: 1,
-                                    songIds: 1,
+                                    songs: 1,
                                 },
                             },
                         ],
-                    },
-                },
-                {
-                    $unwind: { path: '$playlist' },
-                },
-                {
-                    $lookup: {
-                        from: MongoCollection.SONGS,
-                        localField: 'playlist.songIds',
-                        foreignField: '_id',
-                        as: 'playlist.songs',
                     },
                 },
                 {
