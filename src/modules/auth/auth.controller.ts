@@ -1,8 +1,9 @@
 import ConfigKey from '@/common/config/config-key';
 import { DateFormat, HttpStatus } from '@/common/constants';
 import { AuthenticationGuard } from '@/common/guards/authentication.guard';
-import { extractToken, hashPassword } from '@/common/helpers/commonFunctions';
+import { hashPassword } from '@/common/helpers/commonFunctions';
 import { TrimBodyPipe } from '@/common/pipe/trim.body.pipe';
+import { UserRepo } from '@/repositories/user.repo';
 import {
     Body,
     Controller,
@@ -12,12 +13,13 @@ import {
     Post,
     Query,
     Req,
-    UseGuards,
     Res,
+    UseGuards,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import dayjs from 'dayjs';
+import { Response } from 'express';
 import { I18nService } from 'nestjs-i18n';
 import { ErrorResponse, SuccessResponse } from 'src/common/helpers/response';
 import { JoiValidationPipe } from 'src/common/pipe/joi.validation.pipe';
@@ -38,8 +40,6 @@ import {
 import { AuthGoogleService } from './services/auth.google.service';
 import { AuthLoginService } from './services/auth.login.service';
 import { AuthMongoService } from './services/auth.mongo.service';
-import { Response } from 'express';
-import { UserRepo } from '@/repositories/user.repo';
 
 @Controller('/auth')
 export class AuthController {
